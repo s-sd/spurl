@@ -2,6 +2,10 @@
 SPURL is an open-source toolkit for building self-play algorithms to solve reinforcement learning environments. SPURL's modular build allows users to train with SPURL for a variety of self-play, multi-agent or single-agent reinforcement learning problems.
 
 We present a variety of demos to illustrate the functionality of SPURL:
+TicTacToe/ Noughts & Crosses
+Connect Four
+Pong
+Cartpole
 
 SPURL currently demonstrates the following functionality:
 
