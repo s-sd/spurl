@@ -5,5 +5,5 @@ import numpy as np
 def save_model():
     return None
 
-def print_metrics():
+def load_model():
     return None

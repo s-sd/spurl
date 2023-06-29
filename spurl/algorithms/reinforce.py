@@ -81,9 +81,10 @@ class REINFORCE:
         
         return states, actions, rewards
     
-    def train(self, states, actions, rewards, epochs, batch_size, verbose=True):
+    def update(self, states, actions, rewards, epochs, batch_size, verbose=True):
         for epoch in range(epochs):
-            print(f'Epoch: {epoch+1}/{epochs}')
+            if verbose:
+                print(f'Epoch: {epoch+1}/{epochs}')
             for start_index in tqdm(range(0, len(states), batch_size), disable = not verbose):
                 states_batch = states[start_index:start_index+batch_size]
                 actions_batch = actions[start_index:start_index+batch_size]

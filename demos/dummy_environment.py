@@ -12,7 +12,6 @@ def build_policy_network(state_shape, num_actions):
     return policy_network
 
 
-
 class DummyEnv(gym.Env):
     def __init__(self, num_actions):
         self.episode_terminate = 256
