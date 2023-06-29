@@ -15,3 +15,8 @@ SPURL currently demonstrates the following functionality:
 | Opponent Sampling | Vanilla/ Ficticious/ Prioritised Ficticious |
 | RL Scenarios | Self-Play/ Co-op MARL/ Single-Agent |
 | Opponent Experience for Training | Yes/ No |
+
+
+## Quick Start
+
+Entry-points into SPURL are present in `spurl.core` and may be used to train or test any algorithms.
