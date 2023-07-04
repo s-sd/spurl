@@ -47,7 +47,7 @@ class REINFORCE:
             loss -= log_prob * reward
         return loss
     
-    def run(self, num_episodes):
+    def run(self, num_episodes, discount_rewards=True):
         rewards = []
         actions = []
         states = []
@@ -69,13 +69,16 @@ class REINFORCE:
                 state = next_state
                 
                 if done:
-                    discounted_rewards = self.compute_discounted_rewards(episode_rewards).tolist()
+                    if discount_rewards:
+                        discounted_rewards = self.compute_discounted_rewards(episode_rewards).tolist()
+                        rewards += discounted_rewards
+                    else:
+                        rewards += episode_rewards
                                         
                     states += episode_states
                     actions += episode_actions
-                    rewards += discounted_rewards
                     
-                    print(f'Episode Reward: {np.mean(discounted_rewards)}')
+                    # print(f'Episode Reward: {np.mean(discounted_rewards)}')
                     
                     break
         
