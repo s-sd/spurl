@@ -4,7 +4,7 @@ import numpy as np
 from tqdm import tqdm
 
 class REINFORCE:
-    def __init__(self, env, policy_network, learning_rate=0.001, gamma=0.99, action_preprocessor=None, state_preprocessor=None):
+    def __init__(self, env, policy_network, learning_rate=0.001, gamma=0.99, state_preprocessor=None, artificial_truncation=None):
         
         self.env = env
         
@@ -20,13 +20,16 @@ class REINFORCE:
         self.actions = []
         self.states = []
         
-        self.action_preprocessor = action_preprocessor
         self.state_preprocessor = state_preprocessor
+        
+        self.artificial_truncation = artificial_truncation
     
     def select_action(self, state):
         state = np.array([state])
         action_probs = self.policy_network(state)
         if np.isnan(action_probs).any():
+            print(action_probs)
+            print(state)
             raise ValueError('Network outputs contains NaN')
         dist = tfp.distributions.Categorical(probs=action_probs, dtype=tf.float32)
         action = dist.sample()
@@ -67,6 +70,8 @@ class REINFORCE:
             episode_actions = []
             episode_states = []
             
+            episode_number = 0
+            
             while True:
                 action = self.select_action(state)
                 values = self.env.step(np.squeeze(np.array(action, dtype=np.uint32)))
@@ -81,6 +86,13 @@ class REINFORCE:
                 episode_rewards.append(reward)
                 
                 state = next_state
+                
+                #terminate episode at artificial truncation number of steps
+                if self.artificial_truncation is not None:
+                    if episode_number > self.artificial_truncation:
+                        done = True
+                
+                episode_number += 1
                 
                 if done:
                     if discount_rewards:
@@ -98,8 +110,6 @@ class REINFORCE:
         
         if self.state_preprocessor is not None:
             states = self.state_preprocessor(states)
-        if self.action_preprocessor is not None:
-            actions = self.action_preprocessor(actions)
         
         return states, actions, rewards
     
