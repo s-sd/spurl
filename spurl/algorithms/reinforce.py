@@ -1,9 +1,10 @@
 import tensorflow as tf
+import tensorflow_probability as tfp
 import numpy as np
 from tqdm import tqdm
 
 class REINFORCE:
-    def __init__(self, env, policy_network, learning_rate=0.001, gamma=0.99):
+    def __init__(self, env, policy_network, learning_rate=0.001, gamma=0.99, action_preprocessor=None, state_preprocessor=None):
         
         self.env = env
         
@@ -18,11 +19,17 @@ class REINFORCE:
         self.rewards = []
         self.actions = []
         self.states = []
+        
+        self.action_preprocessor = action_preprocessor
+        self.state_preprocessor = state_preprocessor
     
     def select_action(self, state):
         state = np.array([state])
-        action_probs = self.policy_network(state)[0]
-        action = np.random.choice(self.num_actions, p=action_probs.numpy())
+        action_probs = self.policy_network(state)
+        if np.isnan(action_probs).any():
+            raise ValueError('Network outputs contains NaN')
+        dist = tfp.distributions.Categorical(probs=action_probs, dtype=tf.float32)
+        action = dist.sample()
         return action
     
     def compute_discounted_rewards(self, rewards):
@@ -42,7 +49,7 @@ class REINFORCE:
             reward = rewards[t]
             
             action_probs = self.policy_network(state)
-            log_prob = tf.math.log(action_probs[0, action])
+            log_prob = tf.math.log(action_probs[0, int(action)])
             loss -= log_prob * reward
         return loss
     
@@ -52,6 +59,7 @@ class REINFORCE:
         states = []
         for i in range(num_episodes):
             state = self.env.reset()
+            
             if type(state) is tuple and len(state) > 1:
                 state, _ = state
             
@@ -61,7 +69,8 @@ class REINFORCE:
             
             while True:
                 action = self.select_action(state)
-                values = self.env.step(action)
+                values = self.env.step(np.squeeze(np.array(action, dtype=np.uint32)))
+                
                 if type(values) is tuple and len(values)>4:
                     next_state, reward, done, _, _ = values
                 else:
@@ -86,6 +95,11 @@ class REINFORCE:
                     # print(f'Episode Reward: {np.mean(discounted_rewards)}')
                     
                     break
+        
+        if self.state_preprocessor is not None:
+            states = self.state_preprocessor(states)
+        if self.action_preprocessor is not None:
+            actions = self.action_preprocessor(actions)
         
         return states, actions, rewards
     

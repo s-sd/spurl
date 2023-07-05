@@ -19,6 +19,8 @@ def test(algorithm, trials, episodes_per_trial):
         mean_reward = np.mean(rewards)
         mean_rewards.append(mean_reward)
         print(f'    Mean Reward: {mean_reward}')
-    return mean_rewards
+        mean_episode_length = len(rewards) / episodes_per_trial
+        print(f'    Mean Episode Length: {mean_episode_length}')
+    return mean_rewards, mean_episode_length
     
 
