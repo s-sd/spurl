@@ -8,7 +8,6 @@ class REINFORCE:
         
         self.env = env
         
-        self.num_actions = self.env.action_space.n
         self.state_shape = self.env.observation_space.shape
         
         self.learning_rate = learning_rate
