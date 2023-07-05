@@ -20,7 +20,7 @@ def build_policy_network(state_shape, num_actions):
     policy_network = tf.keras.Model(inputs=inputs, outputs=dense4)
     return policy_network
 
-env = gym.make('CartPole-v1', render_mode='rgb_array')
+env = gym.make('CartPole-v1')
 
 state_shape = env.observation_space.shape
 num_actions = env.action_space.n
@@ -36,7 +36,20 @@ reinforce.optimizer = tf.keras.optimizers.Adam(reinforce.learning_rate, epsilon=
 
 reinforce = train(reinforce, trials=32, episodes_per_trial=64, epochs_per_trial=2, batch_size=32, verbose=True)
 
-rewards = test(reinforce, trials=2, episodes_per_trial=8)
+rewards, lengths = test(reinforce, trials=2, episodes_per_trial=8)
+
+# render the environment
+rendering_env = gym.make('CartPole-v1', render_mode='rgb_array')
+reinforce.env = rendering_env
+images_list = []
+state, _ = reinforce.env.reset()
+while True:
+    action = reinforce.select_action(state)
+    state, reward, done, _, _ = reinforce.env.step(np.squeeze(np.array(action, dtype=np.uint32)))
+    image = reinforce.env.render()
+    images_list.append(image)
+    if done:
+        break
 
 
 
