@@ -1,9 +1,11 @@
 from spurl.algorithms.reinforce import REINFORCE
 from spurl.core import train, test
+from spurl.utils import save_model, load_model, save_environment_render
 
 import tensorflow as tf
 import gymnasium as gym
 import numpy as np
+import os
 
 tf.random.set_seed(42)
 np.random.seed(42)
@@ -38,25 +40,27 @@ reinforce = train(reinforce, trials=64, episodes_per_trial=16, epochs_per_trial=
 
 rewards, lengths = test(reinforce, trials=2, episodes_per_trial=8)
 
-# add saving loading functionality and show it here
+# saving loading functionality
+temp_path = r'./temp'
+if not os.path.exists(temp_path):
+    os.mkdir(temp_path)
+
+save_model(reinforce, os.path.join(temp_path, 'model'))
+
+del reinforce, policy_network
+
+policy_network = None
+
+reinforce = REINFORCE(env, policy_network, artificial_truncation=256)
+
+reinforce = load_model(reinforce, os.path.join(temp_path, 'model'))
+
+rewards, lengths = test(reinforce, trials=2, episodes_per_trial=8)
 
 #render the environment
-import matplotlib.pyplot as plt
-import os
-save_path = r'/home/s-sd/Desktop/self_play/self_play_repo/cartpole_solved_images'
 rendering_env = gym.make('CartPole-v1', render_mode='rgb_array')
-reinforce.env = rendering_env
-images_list = []
-state, _ = reinforce.env.reset()
-step = 0
-while True:
-    action = reinforce.select_action(state)
-    state, reward, done, _, _ = reinforce.env.step(np.squeeze(np.array(action, dtype=np.uint32)))
-    image = reinforce.env.render()
-    plt.imsave(os.path.join(save_path, f'step_{step}.png'), image) # change to save image
-    step += 1
-    if done:
-        break
+
+save_environment_render(rendering_env, algorithm=reinforce, save_path=os.path.join(temp_path, 'cartpole_trajectory'))
 
 
 
