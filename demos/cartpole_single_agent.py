@@ -38,6 +38,8 @@ reinforce = train(reinforce, trials=32, episodes_per_trial=64, epochs_per_trial=
 
 rewards, lengths = test(reinforce, trials=2, episodes_per_trial=8)
 
+# add saving loading functionality and show it here
+
 # render the environment
 rendering_env = gym.make('CartPole-v1', render_mode='rgb_array')
 reinforce.env = rendering_env
@@ -47,7 +49,7 @@ while True:
     action = reinforce.select_action(state)
     state, reward, done, _, _ = reinforce.env.step(np.squeeze(np.array(action, dtype=np.uint32)))
     image = reinforce.env.render()
-    images_list.append(image)
+    images_list.append(image) # change to save image
     if done:
         break
 
