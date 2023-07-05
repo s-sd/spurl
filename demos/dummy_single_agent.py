@@ -44,6 +44,6 @@ policy_network = build_policy_network((32,32), num_actions)
 
 reinforce = REINFORCE(env, policy_network)
 
-reinforce = train(reinforce, 2, 4, 2, 8, verbose=True)
+reinforce = train(reinforce, trials=2, episodes_per_trial=4, epochs_per_trial=2, batch_size=8, verbose=2)
 
-rewards = test(reinforce, 2, 4)
+rewards = test(reinforce, trials=2, episodes_per_trial=4)

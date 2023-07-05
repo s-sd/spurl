@@ -53,6 +53,8 @@ class REINFORCE:
         states = []
         for i in range(num_episodes):
             state = self.env.reset()
+            if type(state) is tuple and len(state) > 1:
+                state, _ = state
             
             episode_rewards = []
             episode_actions = []
@@ -60,7 +62,11 @@ class REINFORCE:
             
             while True:
                 action = self.select_action(state)
-                next_state, reward, done, _ = self.env.step(action)
+                values = self.env.step(action)
+                if type(values) is tuple and len(values)>4:
+                    next_state, reward, done, _, _ = values
+                else:
+                    next_state, reward, done, _ = values
                 
                 episode_states.append(state)
                 episode_actions.append(action)
