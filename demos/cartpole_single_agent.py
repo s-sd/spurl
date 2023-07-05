@@ -34,22 +34,27 @@ reinforce.gamma = 0.99
 reinforce.learning_rate = 0.0001
 reinforce.optimizer = tf.keras.optimizers.Adam(reinforce.learning_rate, epsilon=1e-6, weight_decay=0.004, clipnorm=1e1)
 
-reinforce = train(reinforce, trials=32, episodes_per_trial=64, epochs_per_trial=2, batch_size=32, verbose=True)
+reinforce = train(reinforce, trials=64, episodes_per_trial=16, epochs_per_trial=2, batch_size=32, verbose=True)
 
 rewards, lengths = test(reinforce, trials=2, episodes_per_trial=8)
 
 # add saving loading functionality and show it here
 
-# render the environment
+#render the environment
+import matplotlib.pyplot as plt
+import os
+save_path = r'/home/s-sd/Desktop/self_play/self_play_repo/cartpole_solved_images'
 rendering_env = gym.make('CartPole-v1', render_mode='rgb_array')
 reinforce.env = rendering_env
 images_list = []
 state, _ = reinforce.env.reset()
+step = 0
 while True:
     action = reinforce.select_action(state)
     state, reward, done, _, _ = reinforce.env.step(np.squeeze(np.array(action, dtype=np.uint32)))
     image = reinforce.env.render()
-    images_list.append(image) # change to save image
+    plt.imsave(os.path.join(save_path, f'step_{step}.png'), image) # change to save image
+    step += 1
     if done:
         break
 

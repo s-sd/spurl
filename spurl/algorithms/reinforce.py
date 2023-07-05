@@ -30,7 +30,9 @@ class REINFORCE:
         if np.isnan(action_probs).any():
             print(action_probs)
             print(state)
-            raise ValueError('Network outputs contains NaN')
+            raise ValueError('Network outputs contains NaN') 
+            # suggestions: reduce network size, clip grads, scale states, add regularisation
+        
         dist = tfp.distributions.Categorical(probs=action_probs, dtype=tf.float32)
         action = dist.sample()
         return action
