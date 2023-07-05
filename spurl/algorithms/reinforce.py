@@ -1,6 +1,5 @@
 import tensorflow as tf
 import numpy as np
-import gymnasium as gym 
 from tqdm import tqdm
 
 class REINFORCE:
@@ -32,7 +31,7 @@ class REINFORCE:
         for t in reversed(range(len(rewards))):
             running_reward = rewards[t] + self.gamma * running_reward
             discounted_rewards[t] = running_reward
-        normalised_discounted_rewards = (discounted_rewards - np.mean(discounted_rewards)) / np.std(discounted_rewards) # normalise
+        normalised_discounted_rewards = (discounted_rewards - np.mean(discounted_rewards)) / (np.std(discounted_rewards) + 1e-8) # normalise
         return normalised_discounted_rewards
     
     def compute_loss(self, states, actions, rewards):

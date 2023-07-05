@@ -16,8 +16,15 @@ def build_policy_network(state_shape, num_actions):
 
 env = gym.make('CartPole-v1')
 
-initial_observation, _ = env.reset()
+state_shape = env.observation_space.shape
+num_actions = env.action_space.n
 
-np.shape(initial_observation)
+policy_network = build_policy_network(state_shape, num_actions)
 
-a,b,c,d,e = env.step(env.action_space.sample())
+reinforce = REINFORCE(env, policy_network)
+
+# change some parameters of the algorithm
+reinforce.gamma = 0.99
+reinforce.learning_rate = 0.001
+
+
