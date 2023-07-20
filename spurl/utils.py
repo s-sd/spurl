@@ -58,8 +58,6 @@ def add_final_layer(input, output_shape, action_type):
             output = tf.keras.layers.Dense(output_shape, activation='softmax')(input)
         case 'CONTINUOUS':
             dense_output = tf.keras.layers.Dense(np.prod(output_shape), activation='linear')(input)
-
-            # Reshape output
             output = tf.keras.layers.Reshape(output_shape)(dense_output)
         case 'MULTI-DISCRETE':
             #TODO : implement 
@@ -218,21 +216,5 @@ def build_policy_network(state_shape, output_shape, action_space, policy_type, l
     
     return model 
 
-if __name__ == '__main__':
-    
-    # Example for continuous enviornment 
-    env = gym.make('Pendulum-v1', g=9.81)
-    state_shape = env.observation_space.shape
-    action_space = env.action_space
-    action_size = env.action_space.shape
-    model_pendulum = build_policy_network([32,32,3], action_size, action_space = action_space, policy_type = 'cnn', layers = [[2,2], [32, 32]])
-    
-    # Example cases for cartpole using fcn : leave first block blank [] -> TODO : find another way to replace this 
-    gym.make('CartPole-v1')
-    state_shape = env.observation_space.shape
-    action_space = env.action_space
-    action_size = env.action_space.shape
-    model_cartpole = build_policy_network([32,32,3], action_size, action_space = action_space, policy_type = 'fcn', layers = [[], [32, 32]])
-    
-    print('chicken')
+
     
