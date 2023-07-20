@@ -49,58 +49,25 @@ def save_environment_render(rendering_env, algorithm, save_path):
             print(f'Trajectory saved to {save_path}')
             break
 
-def build_cnn(state_shape, output_shape, layers):
+def add_final_layer(input, output_shape, action_type):
     """
-    Builds a simple CNN-based policy network with variable number of layers
-    
-    Parameters:
-        state_shape (tuple) : shape of input state 
-        output_shape (tuple) : shape of output (actions or value)
-        layers (array) : layers=[[2, 3, 3],[32, 32,]] # first is list of cnn blocks, second is number of nodes 
-    
-    Returns:
-        tf.keras.Model : Policy network model using CNNs
-        
-    Example:
-        state_shape = (84, 84, 4)
-        output_shape = 6
-        layers=[[2, 3, 3],[32, 32,]]
-        model = build_policy_network(state_shape, output_shape, num_actions)
+    Add final layer of network, depending on action type 
     """
-    
-    # layers
-    cnn_blocks = layers[0] 
-    fcn_blocks = layers[1]
-    
-    model = tf.keras.models.Sequential()
-    
-    # Add cnn blocks 
-    for i, filter_size in enumerate(cnn_blocks): 
-        
-        base_num = 5 #2**5 = 32 
-        input_size = 2**(base_num+i) # to get 32, 64, 128 for filter size etc depending on number of blocks provided 
-        
-        
-        if i == 0:
-            model.add(tf.keras.layers.Conv2D(input_size, (filter_size, filter_size), activation='relu', input_shape=state_shape))
-        else:
-            model.add(tf.keras.layers.Conv2D(input_size, (filter_size, filter_size), activation='relu'))
-    
-    # Add maxpool and flatten layers 
-    model.add(tf.keras.layers.MaxPooling2D((2, 2)))
-    model.add(tf.keras.layers.Flatten())
-    
-    # Add fcn layers 
-    for j, node_size in enumerate(fcn_blocks):
-        model.add(tf.keras.layers.Dense(node_size, activation='relu'))
-        
-    # Add final output layer
-    model.add(tf.keras.layers.Dense(output_shape))
-    #model.summary()
-    
-    return model
+    match action_type: 
+        case 'DISCRETE':
+            output = tf.keras.layers.Dense(output_shape, activation='softmax')(input)
+        case 'CONTINUOUS':
+            dense_output = tf.keras.layers.Dense(np.prod(output_shape), activation='linear')(input)
 
-def build_cnn_refactor(state_shape, output_shape, layers, action_type):
+            # Reshape output
+            output = tf.keras.layers.Reshape(output_shape)(dense_output)
+        case 'MULTI-DISCRETE':
+            #TODO : implement 
+            raise("Not yet implemented")
+        
+    return output
+       
+def build_cnn(state_shape, output_shape, layers, action_type):
     """
     Builds a simple CNN-based policy network with variable number of layers
     
@@ -158,59 +125,7 @@ def build_cnn_refactor(state_shape, output_shape, layers, action_type):
      
     return model 
 
-def build_fcn(state_shape, output_shape, layers, add_dropout = True): 
-    """
-    Builds a fully connected network to be used as a policy network
-    
-    Parameters: 
-        state_shape (tuple) : shape of input state 
-        output_shape (tuple) : shape of output (actions or value)
-        layers (array) : layers = [32, 32] # first is list of cnn blocks, second is number of nodes 
-    
-    Returns:
-        tf.keras.Model : Policy network model using dense layers only 
-        
-    Example:
-        state_shape = (84, 84, 4)
-        output_shape = 6
-        layers=[[2, 3, 3],[32, 32,]]
-        model = build_policy_network(state_shape, output_shape, num_actions)
-        
-    """
-    model = tf.keras.models.Sequential()
-    model.add(tf.keras.layers.Input(shape=state_shape))
-    model.add(tf.keras.layers.Flatten())
-    
-    # add fcn layers 
-    for node_size in layers: 
-        print(f"node size : {node_size} ")
-        model.add(tf.keras.layers.Dense(node_size, activation='relu'))
-        if add_dropout:
-            model.add(tf.keras.layers.Dropout(0.4))
-    
-    # final output layer 
-    model.add(tf.keras.layers.Dense(output_shape, activation='softmax'))
-    
-    # print model summary
-    #model.summary()
-    return model 
-
-def add_final_layer(input, output_shape, action_type):
-    """
-    Add final layer of network, depending on action type 
-    """
-    match action_type: 
-        case 'DISCRETE':
-            dense_output = tf.keras.layers.Dense(output_shape, activation='softmax')(input)
-        case 'CONTINUOUS':
-            dense_output = tf.keras.layers.Dense(output_shape, activation='linear')(input)
-        case 'MULTI-DISCRETE':
-            #TODO : implement 
-            raise("Not yet implemented")
-        
-    return dense_output 
-        
-def build_fcn_refactor(state_shape, output_shape, layers, action_type, add_dropout = True): 
+def build_fcn(state_shape, output_shape, layers, action_type, add_dropout = True): 
     
     """
     Builds a fully connected network to be used as a policy network
@@ -218,35 +133,37 @@ def build_fcn_refactor(state_shape, output_shape, layers, action_type, add_dropo
     Parameters: 
         state_shape (tuple) : shape of input state 
         output_shape (tuple) : shape of output (actions or value)
-        layers (array) : layers = [32, 32] # first is list of cnn blocks, second is number of nodes 
-    
+        layers (array) : layers = [32, 32] 
+        action_type (str) : determines final output layer. Can take "DISCRETE", "CONTINUOUS" or "MULTIDISCRETE"
+        add_dropout (bool) : Whether to include drop out layers
     Returns:
         tf.keras.Model : Policy network model using dense layers only 
         
     Example:
         state_shape = (84, 84, 4)
         output_shape = 6
-        layers=[[2, 3, 3],[32, 32,]]
+        layers=[[],[32, 32,]]
         model = build_policy_network(state_shape, output_shape, num_actions)
         
     """
     
-    num_layers = len(layers) 
+    dense_layers = layers[1]
+    num_layers = len(dense_layers) 
     inputs = tf.keras.layers.Input(shape=state_shape)
     flat = tf.keras.layers.Flatten()(inputs)
     
     # Dense layers, using input nodes for each layer
     for i in range(num_layers):
-        if i == 0: # apply previous layer for first layer 
-            dense = tf.keras.layers.Dense(layers[i], activation='relu')(flat)
-        else:
-            dense = tf.keras.layers.Dense(layers[i], activation='relu')(dense)
         
-        # Add drop out if needed
+        if i == 0: # apply previous layer for first layer 
+            dense = tf.keras.layers.Dense(dense_layers[i], activation='relu')(flat)
+        else:
+            dense = tf.keras.layers.Dense(dense_layers[i], activation='relu')(dense)
+
         if add_dropout: 
             dense = tf.keras.layers.Dropout(0.4)(dense) 
     
-    dense_output = add_final_layer(dense, 3, action_type)
+    dense_output = add_final_layer(dense, output_shape, action_type)
     model = tf.keras.Model(inputs=inputs, outputs=dense_output)
     return model 
 
@@ -282,7 +199,6 @@ def build_policy_network(state_shape, output_shape, action_space, policy_type, l
         
         
     """
-    
     match type(action_space): 
         case gym.spaces.Discrete:
             action_type = 'DISCRETE'
@@ -290,32 +206,33 @@ def build_policy_network(state_shape, output_shape, action_space, policy_type, l
             action_type = 'CONTINUOUS'
         case gym.spaces.MultiDiscrete:
             action_type = 'MULTIDISCRETE'
+
     print(f"Action type: {action_type}")
     
     # initialise policy network model to be used 
     match policy_type: 
         case 'cnn':
-            model = build_cnn(state_shape, output_shape, layers)
+            model = build_cnn(state_shape, output_shape, layers, action_type)
         case 'fcn':
-            model = build_fcn(state_shape, output_shape, layers)
+            model = build_fcn(state_shape, output_shape, layers, action_type)
     
     return model 
 
 if __name__ == '__main__':
-     
-    env = gym.make('CartPole-v1')
-
+    
+    # Example for continuous enviornment 
+    env = gym.make('Pendulum-v1', g=9.81)
     state_shape = env.observation_space.shape
     action_space = env.action_space
-    num_actions = env.action_space.n
+    action_size = env.action_space.shape
+    model_pendulum = build_policy_network([32,32,3], action_size, action_space = action_space, policy_type = 'cnn', layers = [[2,2], [32, 32]])
     
-    model_cnn = build_cnn([32,32,3], 3, layers = [[2, 3, 3],[32, 32,]]) 
-    model_cnn2 = build_cnn_refactor([32,32,3], 3, layers = [[2, 3, 3],[32, 32,]], action_type = 'DISCRETE')
-    
-    #model_fcn1 = build_fcn([32,32,3], 3, [64,32,14])
-    #model_fcn2 = build_fcn_refactor([32,32,3], 2, [64,32,14], action_type = 'DISCRETE')
-    
-    #model_test = build_policy_network([32,32,3], 3, action_space = action_space, policy_type = 'fcn', layers = [32, 32])
+    # Example cases for cartpole using fcn : leave first block blank [] -> TODO : find another way to replace this 
+    gym.make('CartPole-v1')
+    state_shape = env.observation_space.shape
+    action_space = env.action_space
+    action_size = env.action_space.shape
+    model_cartpole = build_policy_network([32,32,3], action_size, action_space = action_space, policy_type = 'fcn', layers = [[], [32, 32]])
     
     print('chicken')
     
