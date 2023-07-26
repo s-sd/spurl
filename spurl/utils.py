@@ -2,7 +2,7 @@ import tensorflow as tf
 import numpy as np
 import matplotlib.pyplot as plt
 import os
-import gym
+import gymnasium
 
 def save_model(algorithm, save_path):
     """
@@ -55,7 +55,7 @@ def add_final_layer(input, output_shape, action_type):
     """
     match action_type: 
         case 'DISCRETE':
-            output = tf.keras.layers.Dense(output_shape, activation='softmax')(input)
+            output = tf.keras.layers.Dense(np.prod(output_shape), activation='softmax')(input)
         case 'CONTINUOUS':
             dense_output = tf.keras.layers.Dense(np.prod(output_shape), activation='linear')(input)
             output = tf.keras.layers.Reshape(output_shape)(dense_output)
@@ -131,7 +131,7 @@ def build_fcn(state_shape, output_shape, layers, action_type, add_dropout = True
     Parameters: 
         state_shape (tuple) : shape of input state 
         output_shape (tuple) : shape of output (actions or value)
-        layers (array) : layers = [32, 32] 
+        layers (list) : layers as a list. Leave first item blank, as only for []
         action_type (str) : determines final output layer. Can take "DISCRETE", "CONTINUOUS" or "MULTIDISCRETE"
         add_dropout (bool) : Whether to include drop out layers
     Returns:
@@ -140,8 +140,9 @@ def build_fcn(state_shape, output_shape, layers, action_type, add_dropout = True
     Example:
         state_shape = (84, 84, 4)
         output_shape = 6
-        layers=[[],[32, 32,]]
-        model = build_policy_network(state_shape, output_shape, num_actions)
+        layers=[[],[32, 32,]] # leave first item blank as only for cnn
+        action_type = 'DISCRETE'
+        model = build_policy_network(state_shape, output_shape, num_actions, action_type)
         
     """
     
@@ -198,14 +199,12 @@ def build_policy_network(state_shape, output_shape, action_space, policy_type, l
         
     """
     match type(action_space): 
-        case gym.spaces.Discrete:
+        case gymnasium.spaces.discrete.Discrete:
             action_type = 'DISCRETE'
-        case gym.spaces.Box:
+        case gymnasium.spaces.Box:
             action_type = 'CONTINUOUS'
-        case gym.spaces.MultiDiscrete:
+        case gymnasium.spaces.MultiDiscrete:
             action_type = 'MULTIDISCRETE'
-
-    print(f"Action type: {action_type}")
     
     # initialise policy network model to be used 
     match policy_type: 
