@@ -1,9 +1,9 @@
-from spurl.algorithms.reinforce import REINFORCE
+from spurl.algorithms.reinforce import base
 import tensorflow as tf
 import tensorflow_probability as tfp
 import numpy as np
 
-class REINFORCE_Discrete(REINFORCE):
+class REINFORCE(base.REINFORCE):
     def __init__(self, env, policy_network, learning_rate=0.001, gamma=0.99, artificial_truncation=None):
         super().__init__(env, policy_network, learning_rate, gamma, artificial_truncation)
         

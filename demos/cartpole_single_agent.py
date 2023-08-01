@@ -1,4 +1,4 @@
-from spurl.algorithms.reinforce_discrete import REINFORCE_Discrete
+from spurl.algorithms.reinforce.discrete import REINFORCE
 from spurl.core import train, test
 from spurl.utils import save_model, load_model, save_environment_render
 
@@ -29,7 +29,7 @@ num_actions = env.action_space.n
 
 policy_network = build_policy_network(state_shape, num_actions)
 
-reinforce = REINFORCE_Discrete(env, policy_network, artificial_truncation=256)
+reinforce = REINFORCE(env, policy_network, artificial_truncation=256)
 
 # change some parameters of the algorithm
 reinforce.gamma = 0.99
@@ -51,7 +51,7 @@ del reinforce, policy_network
 
 policy_network = None
 
-reinforce = REINFORCE_Discrete(env, policy_network, artificial_truncation=256)
+reinforce = REINFORCE(env, policy_network, artificial_truncation=256)
 
 reinforce = load_model(reinforce, os.path.join(temp_path, 'model'))
 
