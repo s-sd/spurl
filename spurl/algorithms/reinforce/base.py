@@ -54,7 +54,9 @@ class REINFORCE:
             
             while True:
                 action = self.select_action(state, deterministic)
-                values = self.env.step(np.squeeze(np.array(action, dtype=np.uint32)))
+                
+                reshaped_action = np.reshape(np.squeeze(np.array(action, dtype=np.uint32)), self.env.action_space.shape)
+                values = self.env.step(reshaped_action)
                 
                 if type(values) is tuple and len(values)>4:
                     next_state, reward, done, _, _ = values
