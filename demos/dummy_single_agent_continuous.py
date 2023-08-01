@@ -1,4 +1,4 @@
-from spurl.algorithms.reinforce_continuous import REINFORCE_Continuous
+from spurl.algorithms.reinforce.continuous import REINFORCE
 
 from spurl.core import train, test
 
@@ -17,14 +17,16 @@ def build_policy_network(state_shape, action_size):
 
 # learn to always pick 0.5s
 class DummyEnv(gym.Env):
-    def __init__(self, num_actions):
+    def __init__(self, action_size):
         self.episode_terminate = 256
-        self.action_space = gym.spaces.Box(low=-1, high=1, shape=action_size)
+        self.action_space = gym.spaces.Box(low=0, high=1, shape=action_size)
         self.observation_space = gym.spaces.Box(low=0, high=1, shape=(32, 32))
         self.step_num = 0
     def step(self, action):
         if (action - np.array([[0.5, 0.5],[0.5, 0.5]]) < 0.2).all():
             reward = 1
+        elif (action - np.array([[0.5, 0.5],[0.5, 0.5]]) < 0.2).any():
+            reward = 0.5
         else:
             reward = 0
         
@@ -44,8 +46,8 @@ env = DummyEnv(action_size)
 
 policy_network = build_policy_network((32,32), action_size)
 
-reinforce = REINFORCE_Continuous(env, policy_network, scale=0.2)
+reinforce = REINFORCE(env, policy_network, scale=0.2)
 
-reinforce = train(reinforce, trials=16, episodes_per_trial=16, epochs_per_trial=2, batch_size=32, verbose=True)
-
-history = test(reinforce, trials=2, episodes_per_trial=4)
+reinforce = train(reinforce, trials=32, episodes_per_trial=16, epochs_per_trial=2, batch_size=32, verbose=True)
+    
+history = test(reinforce, trials=2, episodes_per_trial=4, deterministic=True)
