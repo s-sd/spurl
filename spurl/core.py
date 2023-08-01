@@ -11,7 +11,7 @@ def train(algorithm, trials, episodes_per_trial, epochs_per_trial, batch_size, v
         algorithm.update(states, actions, rewards, epochs_per_trial, batch_size, verbose=verbose)
     return algorithm
 
-def test(algorithm, trials, episodes_per_trial):
+def test(algorithm, trials, episodes_per_trial, deterministic=False):
     mean_rewards = []
     for trial in range(trials):
         print(f'\nTest Trial: {trial+1}/{trials}')

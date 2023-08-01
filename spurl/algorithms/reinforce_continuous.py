@@ -4,11 +4,11 @@ import tensorflow_probability as tfp
 import numpy as np
 
 class REINFORCE_Continuous(REINFORCE):
-    def __init__(self, env, policy_network, scale, learning_rate=0.001, gamma=0.99, state_preprocessor=None, artificial_truncation=None):
-        super().__init__(env, policy_network, learning_rate, gamma, state_preprocessor, artificial_truncation)
+    def __init__(self, env, policy_network, scale, learning_rate=0.001, gamma=0.99, artificial_truncation=None):
+        super().__init__(env, policy_network, learning_rate, gamma, artificial_truncation)
         self.scale = scale
         
-    def select_action(self, state):
+    def select_action(self, state, deterministic=False):
         state = np.expand_dims(state, axis=0)
         action = self.policy_network(state)
         return tf.squeeze(action).numpy()

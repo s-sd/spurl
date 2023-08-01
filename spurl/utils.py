@@ -12,14 +12,14 @@ def load_model(algorithm, model_path):
     algorithm.policy_network = model
     return algorithm
 
-def save_environment_render(rendering_env, algorithm, save_path):
+def save_environment_render(rendering_env, algorithm, save_path, deterministic=False):
     if not os.path.exists(save_path):
         os.mkdir(save_path)
     algorithm.env = rendering_env
     state, _ = algorithm.env.reset()
     step = 0
     while True:
-        action = algorithm.select_action(state)
+        action = algorithm.select_action(state, deterministic)
         state, reward, done, _, _ = algorithm.env.step(np.squeeze(np.array(action, dtype=np.uint32)))
         image = algorithm.env.render()
         plt.imsave(os.path.join(save_path, f'step_{step}.png'), image) # change to save image
