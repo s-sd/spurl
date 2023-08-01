@@ -7,8 +7,6 @@ import gymnasium as gym
 import numpy as np
 import os
 
-import matplotlib.pyplot as plt
-
 tf.random.set_seed(42)
 np.random.seed(42)
 
@@ -37,7 +35,7 @@ minimum_scale = 0.2
 
 reinforce = REINFORCE(env, policy_network, scale=initial_scale)
 
-reinforce.optimizer = tf.keras.optimizers.Adam(reinforce.learning_rate, epsilon=1e-6, weight_decay=0.004, clipnorm=1e1)
+reinforce.optimizer = tf.keras.optimizers.Adam(reinforce.learning_rate, epsilon=1e-6, clipnorm=1e1)
 
 all_rewards = []
 all_lengths = []

@@ -34,7 +34,7 @@ reinforce = REINFORCE(env, policy_network, artificial_truncation=256)
 # change some parameters of the algorithm
 reinforce.gamma = 0.99
 reinforce.learning_rate = 0.0001
-reinforce.optimizer = tf.keras.optimizers.Adam(reinforce.learning_rate, epsilon=1e-6, weight_decay=0.004, clipnorm=1e1)
+reinforce.optimizer = tf.keras.optimizers.Adam(reinforce.learning_rate, epsilon=1e-6, clipnorm=1e1)
 
 reinforce = train(reinforce, trials=64, episodes_per_trial=16, epochs_per_trial=2, batch_size=32, verbose=True)
 
@@ -47,7 +47,7 @@ if not os.path.exists(temp_path):
 
 save_model(reinforce, os.path.join(temp_path, 'model'))
 
-del reinforce, policy_network
+del reinforce, policy_network, rewards, lengths
 
 policy_network = None
 
@@ -56,6 +56,8 @@ reinforce = REINFORCE(env, policy_network, artificial_truncation=256)
 reinforce = load_model(reinforce, os.path.join(temp_path, 'model'))
 
 rewards, lengths = test(reinforce, trials=2, episodes_per_trial=8, deterministic=True)
+
+del env
 
 #render the environment
 rendering_env = gym.make('CartPole-v1', render_mode='rgb_array')

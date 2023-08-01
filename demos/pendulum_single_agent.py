@@ -31,7 +31,7 @@ policy_network = build_policy_network(state_shape, action_size)
 
 reinforce = REINFORCE(env, policy_network, scale=0.2, artificial_truncation=512)
 
-reinforce.optimizer = tf.keras.optimizers.Adam(reinforce.learning_rate, epsilon=1e-6, weight_decay=0.004, clipnorm=1e1)
+reinforce.optimizer = tf.keras.optimizers.Adam(reinforce.learning_rate, epsilon=1e-6, clipnorm=1e1)
 
 reinforce = train(reinforce, trials=64, episodes_per_trial=8, epochs_per_trial=2, batch_size=32, verbose=True)
 

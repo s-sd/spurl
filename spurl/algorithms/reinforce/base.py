@@ -102,4 +102,4 @@ class REINFORCE:
                 rewards_batch = rewards[start_index:start_index+batch_size]
                 with tf.GradientTape() as tape:
                     loss = self.compute_loss(states_batch, actions_batch, rewards_batch)        
-                self.optimizer.minimize(loss, self.policy_network.trainable_variables, tape)
+                self.optimizer.minimize(loss, self.policy_network.trainable_variables, tape=tape)

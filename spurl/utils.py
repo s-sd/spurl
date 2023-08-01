@@ -20,7 +20,7 @@ def save_environment_render(rendering_env, algorithm, save_path, deterministic=F
     step = 0
     while True:
         action = algorithm.select_action(state, deterministic)
-        state, reward, done, _, _ = algorithm.env.step(np.squeeze(np.array(action, dtype=np.uint32)))
+        state, _, done, _, _ = algorithm.env.step(np.squeeze(np.array(action, dtype=np.uint32)))
         image = algorithm.env.render()
         plt.imsave(os.path.join(save_path, f'step_{step}.png'), image) # change to save image
         step += 1
