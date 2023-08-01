@@ -21,24 +21,6 @@ class REINFORCE(base.REINFORCE):
         return tf.squeeze(action).numpy()
     
     def compute_loss(self,  states, actions, rewards):
-        # states = np.array(states)
-        # action_probs = self.policy_network(states)
-        # dist = tfp.distributions.Normal(action_probs, self.scale) # Assume Gaussian distribution
-        # log_probs = dist.log_prob(actions)
-        # loss = -tf.reduce_mean(tf.reduce_sum(log_probs) * rewards)
-        # return loss
-        
-        # loss = 0
-        # for t in range(len(rewards)):
-        #     state = np.array([states[t]])
-        #     action = actions[t]
-        #     reward = rewards[t]
-            
-        #     action_probs = self.policy_network(state)
-        #     log_prob = tf.math.log(action_probs[0, int(action)])
-        #     loss -= log_prob * reward
-        # return loss
-        
         loss = 0
         for t in range(len(rewards)):
             state = np.array([states[t]])

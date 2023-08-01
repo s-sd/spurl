@@ -31,27 +31,30 @@ policy_network = build_policy_network(state_shape, action_size)
 
 reinforce = REINFORCE(env, policy_network, scale=0.4, artificial_truncation=256)
 
+# for linearly annealing scale
+initial_scale = 2.0
+minimum_scale = 0.2
+
+reinforce = REINFORCE(env, policy_network, scale=initial_scale, artificial_truncation=2048)
+
 reinforce.optimizer = tf.keras.optimizers.Adam(reinforce.learning_rate, epsilon=1e-6, clipnorm=1e1)
-
-all_rewards = []
-all_lengths = []
-
-for i in range(4):
-    reinforce = train(reinforce, trials=2, episodes_per_trial=16, epochs_per_trial=8, batch_size=16, verbose=True)    
-    rewards, lengths = test(reinforce, trials=1, episodes_per_trial=4, deterministic=True)
-
-    all_rewards.append(rewards)
-    all_lengths.append(lengths)
+meta_trials = 512
 
 temp_path = r'./temp'
 if not os.path.exists(temp_path):
     os.mkdir(temp_path)
 
-rendering_env = gym.make("CarRacing-v2", render_mode='rgb_array')
+for meta_trial in range(meta_trials):
+    reinforce = train(reinforce, trials=2, episodes_per_trial=8, epochs_per_trial=2, batch_size=32, verbose=True)
+    rewards, lengths = test(reinforce, trials=1, episodes_per_trial=4, deterministic=True)
+    
+    # linearly annealling scale as time goes on
+    reinforce.scale = initial_scale - (initial_scale - minimum_scale)*(meta_trial/meta_trials)
+    
+    if meta_trial % 8 == 0:
+        save_model(reinforce, os.path.join(temp_path, f'model_racing_{meta_trial}'))
 
-save_environment_render(rendering_env, algorithm=reinforce, save_path=os.path.join(temp_path, 'racing_trajectory'), deterministic=False, artificial_truncation=2048)
+rendering_env = gym.make("BipedalWalker-v3", hardcore=False, render_mode='rgb_array')
 
+save_environment_render(rendering_env, algorithm=reinforce, save_path=os.path.join(temp_path, 'racing_trajectory'), deterministic=True, artificial_truncation=2048)
 
-
-state, _ = env.reset()
-reinforce.select_action(state)
