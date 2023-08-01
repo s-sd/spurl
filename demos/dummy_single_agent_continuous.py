@@ -6,6 +6,9 @@ import tensorflow as tf
 import gymnasium as gym
 import numpy as np
 
+tf.random.set_seed(42)
+np.random.seed(42)
+
 def build_policy_network(state_shape, action_size):
     inputs = tf.keras.layers.Input(shape=state_shape)
     flat = tf.keras.layers.Flatten()(inputs)
@@ -48,6 +51,6 @@ policy_network = build_policy_network((32,32), action_size)
 
 reinforce = REINFORCE(env, policy_network, scale=0.2)
 
-reinforce = train(reinforce, trials=32, episodes_per_trial=16, epochs_per_trial=2, batch_size=32, verbose=True)
+reinforce = train(reinforce, trials=4, episodes_per_trial=16, epochs_per_trial=2, batch_size=32, verbose=True)
     
 history = test(reinforce, trials=2, episodes_per_trial=4, deterministic=True)

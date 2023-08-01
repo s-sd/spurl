@@ -6,6 +6,9 @@ import tensorflow as tf
 import gymnasium as gym
 import numpy as np
 
+tf.random.set_seed(42)
+np.random.seed(42)
+
 def build_policy_network(state_shape, num_actions):
     inputs = tf.keras.layers.Input(shape=state_shape)
     flat = tf.keras.layers.Flatten()(inputs)
