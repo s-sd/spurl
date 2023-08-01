@@ -11,8 +11,13 @@ class REINFORCE(base.REINFORCE):
     def select_action(self, state, deterministic=False):
         state = np.expand_dims(state, axis=0)
         action_probs = self.policy_network(state)
-        dist = tfp.distributions.Normal(action_probs, self.scale)
-        action = dist.sample()
+        
+        if deterministic:
+            dist = tfp.distributions.Normal(action_probs, 0.0)
+            action = dist.sample()
+        else:
+            dist = tfp.distributions.Normal(action_probs, self.scale)
+            action = dist.sample()
         return tf.squeeze(action).numpy()
     
     def compute_loss(self,  states, actions, rewards):

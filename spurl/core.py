@@ -15,7 +15,7 @@ def test(algorithm, trials, episodes_per_trial, deterministic=False):
     mean_rewards = []
     for trial in range(trials):
         print(f'\nTest Trial: {trial+1}/{trials}')
-        states, actions, rewards = algorithm.run(episodes_per_trial, discount_rewards=False)
+        states, actions, rewards = algorithm.run(episodes_per_trial, discount_rewards=False, deterministic=deterministic)
         mean_reward = np.mean(rewards)
         mean_rewards.append(mean_reward)
         print(f'    Mean Reward: {mean_reward}')
