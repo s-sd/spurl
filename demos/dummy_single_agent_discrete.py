@@ -1,9 +1,13 @@
-from spurl.algorithms.reinforce import REINFORCE
+from spurl.algorithms.reinforce.discrete import REINFORCE
+
 from spurl.core import train, test
 
 import tensorflow as tf
 import gymnasium as gym
 import numpy as np
+
+tf.random.set_seed(42)
+np.random.seed(42)
 
 def build_policy_network(state_shape, num_actions):
     inputs = tf.keras.layers.Input(shape=state_shape)
@@ -44,6 +48,6 @@ policy_network = build_policy_network((32,32), num_actions)
 
 reinforce = REINFORCE(env, policy_network)
 
-reinforce = train(reinforce, trials=6, episodes_per_trial=8, epochs_per_trial=2, batch_size=16, verbose=True)
+reinforce = train(reinforce, trials=8, episodes_per_trial=8, epochs_per_trial=2, batch_size=16, verbose=True)
 
-history = test(reinforce, trials=2, episodes_per_trial=4)
+history = test(reinforce, trials=2, episodes_per_trial=4, deterministic=True)

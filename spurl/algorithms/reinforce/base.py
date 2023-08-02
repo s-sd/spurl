@@ -4,7 +4,7 @@ import numpy as np
 from tqdm import tqdm
 
 class REINFORCE:
-    def __init__(self, env, policy_network, learning_rate=0.001, gamma=0.99, state_preprocessor=None, artificial_truncation=None):
+    def __init__(self, env, policy_network, learning_rate=0.001, gamma=0.99, artificial_truncation=None):
         
         self.env = env
         
@@ -18,23 +18,11 @@ class REINFORCE:
         self.rewards = []
         self.actions = []
         self.states = []
-        
-        self.state_preprocessor = state_preprocessor
-        
+                
         self.artificial_truncation = artificial_truncation
-    
-    def select_action(self, state):
-        state = np.array([state])
-        action_probs = self.policy_network(state)
-        if np.isnan(action_probs).any():
-            print(action_probs)
-            print(state)
-            raise ValueError('Network outputs contains NaN') 
-            # suggestions: reduce network size, clip grads, scale states, add regularisation
         
-        dist = tfp.distributions.Categorical(probs=action_probs, dtype=tf.float32)
-        action = dist.sample()
-        return action
+    def select_action(self):
+        raise NotImplementedError
     
     def compute_discounted_rewards(self, rewards):
         discounted_rewards = np.zeros(len(rewards))
@@ -45,19 +33,10 @@ class REINFORCE:
         normalised_discounted_rewards = (discounted_rewards - np.mean(discounted_rewards)) / (np.std(discounted_rewards) + 1e-8) # normalise
         return normalised_discounted_rewards
     
-    def compute_loss(self, states, actions, rewards):
-        loss = 0
-        for t in range(len(rewards)):
-            state = np.array([states[t]])
-            action = actions[t]
-            reward = rewards[t]
-            
-            action_probs = self.policy_network(state)
-            log_prob = tf.math.log(action_probs[0, int(action)])
-            loss -= log_prob * reward
-        return loss
+    def compute_loss(self):
+        raise NotImplementedError
     
-    def run(self, num_episodes, discount_rewards=True):
+    def run(self, num_episodes, discount_rewards=True, deterministic=False):
         rewards = []
         actions = []
         states = []
@@ -74,8 +53,10 @@ class REINFORCE:
             episode_number = 0
             
             while True:
-                action = self.select_action(state)
-                values = self.env.step(np.squeeze(np.array(action, dtype=np.uint32)))
+                action = self.select_action(state, deterministic)
+                
+                reshaped_action = np.reshape(np.squeeze(np.array(action, dtype=np.uint32)), self.env.action_space.shape)
+                values = self.env.step(reshaped_action)
                 
                 if type(values) is tuple and len(values)>4:
                     next_state, reward, done, _, _ = values
@@ -109,9 +90,6 @@ class REINFORCE:
                     
                     break
         
-        if self.state_preprocessor is not None:
-            states = self.state_preprocessor(states)
-        
         return states, actions, rewards
     
     def update(self, states, actions, rewards, epochs, batch_size, verbose=True):
@@ -124,4 +102,4 @@ class REINFORCE:
                 rewards_batch = rewards[start_index:start_index+batch_size]
                 with tf.GradientTape() as tape:
                     loss = self.compute_loss(states_batch, actions_batch, rewards_batch)        
-                self.optimizer.minimize(loss, self.policy_network.trainable_variables, tape)
+                self.optimizer.minimize(loss, self.policy_network.trainable_variables, tape=tape)
