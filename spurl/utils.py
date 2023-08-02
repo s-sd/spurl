@@ -51,15 +51,22 @@ def save_environment_render(rendering_env, algorithm, save_path, deterministic=F
             print(f'Trajectory saved to {save_path}')
             break
 
-def add_final_layer(input, output_shape, action_type):
+def add_final_layer(input, output_shape, action_type, activation_fn = 'linear'):
     """
     Add final layer of network, depending on action type 
+    
+    Parameters: 
+        input ()
+        output_shape (tuple)
+        action_type (str)
+        activation_fn (str) : Defines which activation function to use for continuous cases only
     """
+    
     match action_type: 
         case 'DISCRETE':
             output = tf.keras.layers.Dense(np.prod(output_shape), activation='softmax')(input)
         case 'CONTINUOUS':
-            dense_output = tf.keras.layers.Dense(np.prod(output_shape), activation='linear')(input)
+            dense_output = tf.keras.layers.Dense(np.prod(output_shape), activation=activation_fn)(input)
             output = tf.keras.layers.Reshape(output_shape)(dense_output)
         case 'MULTI-DISCRETE':
             #TODO : implement 
@@ -67,7 +74,7 @@ def add_final_layer(input, output_shape, action_type):
         
     return output
        
-def build_cnn(state_shape, output_shape, layers, action_type):
+def build_cnn(state_shape, output_shape, layers, action_type, add_dropout = True, activation_fn = 'linear'):
     """
     Builds a simple CNN-based policy network with variable number of layers
     
@@ -116,9 +123,12 @@ def build_cnn(state_shape, output_shape, layers, action_type):
             dense = tf.keras.layers.Dense(node_size, activation='relu')(flat)
         else:
             dense = tf.keras.layers.Dense(node_size, activation='relu')(dense)
+        
+        if add_dropout: 
+            dense = tf.keras.layers.Dropout(0.4)(dense) 
             
     # Final output layers 
-    output = add_final_layer(dense, output_shape, action_type)
+    output = add_final_layer(dense, output_shape, action_type, activation_fn)
     
     # Build model
     model = tf.keras.Model(inputs=inputs, outputs=output)
@@ -168,7 +178,7 @@ def build_fcn(state_shape, output_shape, layers, action_type, add_dropout = True
     model = tf.keras.Model(inputs=inputs, outputs=dense_output)
     return model 
 
-def build_policy_network(state_shape, output_shape, action_space, policy_type, layers): 
+def build_policy_network(state_shape, output_shape, action_space, policy_type, layers, activation_fn = 'linear'): 
     
     """
     Builds a policy network using Keras
@@ -179,10 +189,14 @@ def build_policy_network(state_shape, output_shape, action_space, policy_type, l
         action_space (str) : Defines the action type as 'continuous' 'discrete' or 'multi-discrete'
         policy_type (str) : Defines type of network used (conv or fully connected)
         layers (array) : layers=[[2, 3, 3],[32, 32]] # first is list of cnn blocks, second is number of nodes 
+        activation_fn (str) : Defines activation function used for final output layer.
         
     Note: 
         for layers : for cnn specify cnn, fcn blocks as [[], []]
-        for fcn, simple [] will suffice!!! 
+        for fcn, leave first as blank [[], [x,x]] 
+        
+        activation_fn : Use can define which activation to use for continuous action spaces, 
+        but for discrete spaces default activation function used is softmax
     
     Returns:
         tf.keras.Model : Policy network model
@@ -200,6 +214,7 @@ def build_policy_network(state_shape, output_shape, action_space, policy_type, l
         
         
     """
+        
     match type(action_space): 
         case gymnasium.spaces.discrete.Discrete:
             action_type = 'DISCRETE'
@@ -211,7 +226,7 @@ def build_policy_network(state_shape, output_shape, action_space, policy_type, l
     # initialise policy network model to be used 
     match policy_type: 
         case 'cnn':
-            model = build_cnn(state_shape, output_shape, layers, action_type)
+            model = build_cnn(state_shape, output_shape, layers, action_type, activation_fn)
         case 'fcn':
             model = build_fcn(state_shape, output_shape, layers, action_type)
     
