@@ -1,6 +1,7 @@
 from spurl.algorithms.reinforce.discrete import REINFORCE
 
 from spurl.core import train, test
+from spurl.utils import * 
 
 import tensorflow as tf
 import gymnasium as gym
@@ -8,14 +9,6 @@ import numpy as np
 
 tf.random.set_seed(42)
 np.random.seed(42)
-
-def build_policy_network(state_shape, num_actions):
-    inputs = tf.keras.layers.Input(shape=state_shape)
-    flat = tf.keras.layers.Flatten()(inputs)
-    dense1 = tf.keras.layers.Dense(128, activation='relu')(flat)
-    dense2 = tf.keras.layers.Dense(num_actions, activation='softmax')(dense1)
-    policy_network = tf.keras.Model(inputs=inputs, outputs=dense2)
-    return policy_network
 
 # learn to always pick 0
 class DummyEnv(gym.Env):
@@ -44,7 +37,15 @@ num_actions = 4
 
 env = DummyEnv(num_actions)
 
-policy_network = build_policy_network((32,32), num_actions)
+# Building policy network
+state_shape = env.observation_space.shape
+action_space = env.action_space
+output_shape = (action_space.n,)
+policy_network = build_policy_network(state_shape,
+                                      output_shape,
+                                      action_space,
+                                      policy_type = 'fcn',
+                                      layers = [[],[128]])
 
 reinforce = REINFORCE(env, policy_network)
 

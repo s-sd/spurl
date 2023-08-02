@@ -1,6 +1,6 @@
 from spurl.algorithms.reinforce.continuous import REINFORCE
 from spurl.core import train, test
-from spurl.utils import save_model, load_model, save_environment_render
+from spurl.utils import save_model, load_model, save_environment_render, build_policy_network
 
 import tensorflow as tf
 import gymnasium as gym
@@ -10,24 +10,18 @@ import os
 tf.random.set_seed(42)
 np.random.seed(42)
 
-def build_policy_network(state_shape, action_size):
-    inputs = tf.keras.layers.Input(shape=state_shape)
-    flat = tf.keras.layers.Flatten()(inputs)
-    dense1 = tf.keras.layers.Dense(128, activation='relu')(flat)
-    dropout1 = tf.keras.layers.Dropout(0.4)(dense1)
-    dense2 = tf.keras.layers.Dense(64, activation='relu')(dropout1)
-    dropout2 = tf.keras.layers.Dropout(0.4)(dense2)
-    dense3 = tf.keras.layers.Dense(32, activation='relu')(dropout2)    
-    dense4 = tf.keras.layers.Dense(np.prod(action_size), activation='tanh')(dense3)
-    policy_network = tf.keras.Model(inputs=inputs, outputs=dense4)
-    return policy_network
-
 env = gym.make("Pendulum-v1")
 
-action_size = env.action_space.shape
+action_space = env.action_space
+output_shape = env.action_space.shape
 state_shape = env.observation_space.shape
 
-policy_network = build_policy_network(state_shape, action_size)
+policy_network = build_policy_network(state_shape, 
+                                      output_shape, 
+                                      action_space,
+                                      policy_type = 'fcn',
+                                      layers = [[], [128, 64, 32]],
+                                      activation_fn = 'tanh')
 
 # for linearly annealing scale
 initial_scale = 2.0 # tuning this really helps training

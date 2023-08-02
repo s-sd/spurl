@@ -1,5 +1,5 @@
 from spurl.algorithms.reinforce.continuous import REINFORCE
-
+from spurl.utils import * 
 from spurl.core import train, test
 
 import tensorflow as tf
@@ -8,15 +8,6 @@ import numpy as np
 
 tf.random.set_seed(42)
 np.random.seed(42)
-
-def build_policy_network(state_shape, action_size):
-    inputs = tf.keras.layers.Input(shape=state_shape)
-    flat = tf.keras.layers.Flatten()(inputs)
-    dense1 = tf.keras.layers.Dense(128, activation='relu')(flat)
-    dense2 = tf.keras.layers.Dense(np.prod(action_size), activation='linear')(dense1)
-    reshape = tf.keras.layers.Reshape(action_size)(dense2)
-    policy_network = tf.keras.Model(inputs=inputs, outputs=reshape)
-    return policy_network
 
 # learn to always pick 0.5s
 class DummyEnv(gym.Env):
@@ -47,7 +38,16 @@ action_size = (2, 2)
 
 env = DummyEnv(action_size)
 
-policy_network = build_policy_network((32,32), action_size)
+action_space = env.action_space
+output_shape = env.action_space.shape
+state_shape = env.observation_space.shape
+
+policy_network = build_policy_network(state_shape, 
+                                      output_shape, 
+                                      action_space,
+                                      policy_type = 'fcn',
+                                      layers = [[], [128]],
+                                      activation_fn = 'linear')
 
 reinforce = REINFORCE(env, policy_network, scale=0.2)
 
