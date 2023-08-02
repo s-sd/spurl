@@ -98,6 +98,7 @@ def build_cnn(state_shape, output_shape, layers, action_type, add_dropout = True
     # size of layers
     cnn_blocks = layers[0] 
     fcn_blocks = layers[1]
+    num_fcn_layers = len(fcn_blocks)
     
     inputs = tf.keras.layers.Input(shape = state_shape)
     
@@ -117,6 +118,7 @@ def build_cnn(state_shape, output_shape, layers, action_type, add_dropout = True
     flat = tf.keras.layers.Flatten()(maxpool)
     
     # Add fcn layers 
+    
     for j, node_size in enumerate(fcn_blocks):
         
         if j == 0: 
@@ -124,7 +126,8 @@ def build_cnn(state_shape, output_shape, layers, action_type, add_dropout = True
         else:
             dense = tf.keras.layers.Dense(node_size, activation='relu')(dense)
         
-        if add_dropout: 
+        # Add dropout layers for all layers, except final dense layer 
+        if add_dropout and (j != (num_fcn_layers-1)): 
             dense = tf.keras.layers.Dropout(0.4)(dense) 
             
     # Final output layers 
@@ -171,7 +174,7 @@ def build_fcn(state_shape, output_shape, layers, action_type, add_dropout = True
         else:
             dense = tf.keras.layers.Dense(dense_layers[i], activation='relu')(dense)
 
-        if add_dropout: 
+        if add_dropout and (i != (num_layers-1)):
             dense = tf.keras.layers.Dropout(0.4)(dense) 
     
     dense_output = add_final_layer(dense, output_shape, action_type)
