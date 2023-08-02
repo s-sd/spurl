@@ -13,12 +13,12 @@ np.random.seed(42)
 def build_policy_network(state_shape, action_size):
     inputs = tf.keras.layers.Input(shape=state_shape)
     flat = tf.keras.layers.Flatten()(inputs)
-    dense1 = tf.keras.layers.Dense(64, activation='relu')(flat)
+    dense1 = tf.keras.layers.Dense(128, activation='relu')(flat)
     dropout1 = tf.keras.layers.Dropout(0.4)(dense1)
-    dense2 = tf.keras.layers.Dense(32, activation='relu')(dropout1)
+    dense2 = tf.keras.layers.Dense(64, activation='relu')(dropout1)
     dropout2 = tf.keras.layers.Dropout(0.4)(dense2)
-    dense3 = tf.keras.layers.Dense(24, activation='relu')(dropout2)    
-    dense4 = tf.keras.layers.Dense(np.prod(action_size), activation='linear')(dense3)
+    dense3 = tf.keras.layers.Dense(32, activation='relu')(dropout2)    
+    dense4 = tf.keras.layers.Dense(np.prod(action_size), activation='tanh')(dense3)
     policy_network = tf.keras.Model(inputs=inputs, outputs=dense4)
     return policy_network
 
@@ -36,6 +36,7 @@ minimum_scale = 0.2
 reinforce = REINFORCE(env, policy_network, scale=initial_scale, artificial_truncation=2048)
 
 reinforce.optimizer = tf.keras.optimizers.Adam(reinforce.learning_rate, epsilon=1e-6, clipnorm=1e1)
+
 meta_trials = 512
 
 temp_path = r'./temp'
@@ -43,6 +44,7 @@ if not os.path.exists(temp_path):
     os.mkdir(temp_path)
 
 for meta_trial in range(meta_trials):
+    print(f'\nMeta Trial: {meta_trial+1} / {meta_trials}\n')
     reinforce = train(reinforce, trials=2, episodes_per_trial=8, epochs_per_trial=2, batch_size=32, verbose=True)
     rewards, lengths = test(reinforce, trials=1, episodes_per_trial=4, deterministic=True)
     

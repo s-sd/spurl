@@ -37,7 +37,7 @@ reinforce = REINFORCE(env, policy_network, scale=initial_scale, artificial_trunc
 
 reinforce.optimizer = tf.keras.optimizers.Adam(reinforce.learning_rate, epsilon=1e-6, clipnorm=1e1)
 
-meta_trials = 64
+meta_trials = 512
 
 temp_path = r'./temp'
 if not os.path.exists(temp_path):
@@ -54,13 +54,6 @@ for meta_trial in range(meta_trials):
     if meta_trial % 8 == 0:
         save_model(reinforce, os.path.join(temp_path, f'model_pendulum_{meta_trial}'))
 
-reinforce = load_model(reinforce, os.path.join(temp_path, 'model_pendulum_40'))
-
 rendering_env = gym.make("Pendulum-v1", render_mode='rgb_array')
 
 save_environment_render(rendering_env, algorithm=reinforce, save_path=os.path.join(temp_path, 'pendulum_trajectory'), deterministic=True, artificial_truncation=256)
-
-
-algorithm = reinforce
-state, _ = algorithm.env.reset()
-algorithm.select_action(state, deterministic=True)

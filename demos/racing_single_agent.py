@@ -18,7 +18,7 @@ def build_policy_network(state_shape, action_size):
     dense2 = tf.keras.layers.Dense(64, activation='relu')(dropout1)
     dropout2 = tf.keras.layers.Dropout(0.4)(dense2)
     dense3 = tf.keras.layers.Dense(32, activation='relu')(dropout2)    
-    dense4 = tf.keras.layers.Dense(np.prod(action_size), activation='linear')(dense3)
+    dense4 = tf.keras.layers.Dense(np.prod(action_size), activation='tanh')(dense3)
     policy_network = tf.keras.Model(inputs=inputs, outputs=dense4)
     return policy_network
 
@@ -29,8 +29,6 @@ state_shape = env.observation_space.shape
 
 policy_network = build_policy_network(state_shape, action_size)
 
-reinforce = REINFORCE(env, policy_network, scale=0.4, artificial_truncation=256)
-
 # for linearly annealing scale
 initial_scale = 2.0
 minimum_scale = 0.2
@@ -38,6 +36,7 @@ minimum_scale = 0.2
 reinforce = REINFORCE(env, policy_network, scale=initial_scale, artificial_truncation=2048)
 
 reinforce.optimizer = tf.keras.optimizers.Adam(reinforce.learning_rate, epsilon=1e-6, clipnorm=1e1)
+
 meta_trials = 512
 
 temp_path = r'./temp'
@@ -45,6 +44,7 @@ if not os.path.exists(temp_path):
     os.mkdir(temp_path)
 
 for meta_trial in range(meta_trials):
+    print(f'\nMeta Trial: {meta_trial+1} / {meta_trials}\n')
     reinforce = train(reinforce, trials=2, episodes_per_trial=8, epochs_per_trial=2, batch_size=32, verbose=True)
     rewards, lengths = test(reinforce, trials=1, episodes_per_trial=4, deterministic=True)
     
@@ -54,7 +54,7 @@ for meta_trial in range(meta_trials):
     if meta_trial % 8 == 0:
         save_model(reinforce, os.path.join(temp_path, f'model_racing_{meta_trial}'))
 
-rendering_env = gym.make("BipedalWalker-v3", hardcore=False, render_mode='rgb_array')
+rendering_env = gym.make("CarRacing-v2", render_mode='rgb_array')
 
 save_environment_render(rendering_env, algorithm=reinforce, save_path=os.path.join(temp_path, 'racing_trajectory'), deterministic=True, artificial_truncation=2048)
 
