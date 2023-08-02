@@ -1,3 +1,5 @@
+conda init bash
+
 conda create -n spurl python=3.8
 
 conda activate spurl
