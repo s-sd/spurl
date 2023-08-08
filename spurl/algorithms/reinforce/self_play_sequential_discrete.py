@@ -24,10 +24,10 @@ class REINFORCE(discrete.REINFORCE):
             action = dist.sample()
     
         else:
-            dist = tfp.distributions.Categorical(probs=action_probs, dtype=tf.float32)
+            dist = tfp.distributions.Categorical(probs=action_probs, dtype=tf.float32) # could add noise to action_probs
             action = dist.sample()
         return action
-
+    
     def opponent_sampler(self, opponents_list):
         
         dist = tfp.distributions.Normal(len(opponents_list)/2.0, len(opponents_list)/8.0)
