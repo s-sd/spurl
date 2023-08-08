@@ -2,11 +2,13 @@ from spurl.algorithms.reinforce import discrete
 import tensorflow as tf
 import tensorflow_probability as tfp
 import numpy as np
+import os
 
 class REINFORCE(discrete.REINFORCE):
-    def __init__(self, env, policy_network, learning_rate=0.001, gamma=0.99, artificial_truncation=None, self_play_type='vanilla'):
+    def __init__(self, env, policy_network, learning_rate=0.001, gamma=0.99, artificial_truncation=None, self_play_type='vanilla', opponents_path=None):
         super().__init__(env, policy_network, learning_rate, gamma, artificial_truncation)
         self.self_play_type = self_play_type
+        self.opponents_path = opponents_path
     
     def select_action(self, policy, state, deterministic=False):
         state = np.array([state])
@@ -20,19 +22,43 @@ class REINFORCE(discrete.REINFORCE):
             action_probs = tf.math.round(action_probs)
             dist = tfp.distributions.Categorical(probs=action_probs, dtype=tf.float32)
             action = dist.sample()
-        
+    
         else:
             dist = tfp.distributions.Categorical(probs=action_probs, dtype=tf.float32)
             action = dist.sample()
         return action
+
+    def opponent_sampler(self, opponents_list):
+        
+        dist = tfp.distributions.Normal(len(opponents_list)/2.0, len(opponents_list)/8.0)
+        selected_opponent = int(np.clip(dist.sample(), 0, len(opponents_list)))
+        
+        return selected_opponent
     
-    
-    def select_action_self_play(self, player_num, state, deterministic=False, opponent_path=None):
+    def select_action_self_play(self, player_num, state, deterministic=False):
+        
         if player_num == 0:
             action = self.select_action(self.policy_network, state, deterministic)
+        
         else:
-            action = self.select_action(self.policy_network, state, deterministic)
-                # policy_net = tf.keras.models.load_model(opponent_path)
+            
+            if self.self_play_type == 'vanilla':
+                policy_network = self.policy_network
+                
+            elif self.self_play_type == 'fictitious':
+                opponents_list = sorted(os.listdir(self.opponents_path))
+                opponent_probs = np.ones((len(opponents_list)))
+                dist = tfp.distributions.Categorical(probs=opponent_probs, dtype=tf.float32)
+                selected_opponent = int(dist.sample())
+                policy_network = tf.keras.models.load_model(os.path.join(self.opponents_path, opponents_list[int(selected_opponent)]))
+            
+            elif self.self_play_type == 'prioritised':
+                opponents_list = sorted(os.listdir(self.opponents_path))
+                selected_opponent = self.opponent_sampler(opponents_list)
+                policy_network = tf.keras.models.load_model(os.path.join(self.opponents_path, opponents_list[int(selected_opponent)]))
+                                
+            action = self.select_action(policy_network, state, deterministic)
+        # policy_net = tf.keras.models.load_model(opponent_path)
         # finish this function by adding action selection using opponent using the probability sampling
         return action
     
