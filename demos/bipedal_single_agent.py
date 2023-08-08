@@ -33,7 +33,7 @@ policy_network = build_policy_network(state_shape, action_size)
 initial_scale = 2.0
 minimum_scale = 0.2
 
-reinforce = REINFORCE(env, policy_network, scale=initial_scale, artificial_truncation=2048)
+reinforce = REINFORCE(env, policy_network, scale=initial_scale, artificial_truncation=256)
 
 reinforce.optimizer = tf.keras.optimizers.Adam(reinforce.learning_rate, epsilon=1e-6, clipnorm=1e1)
 
