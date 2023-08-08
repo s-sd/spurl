@@ -1,4 +1,4 @@
-from spurl.algorithms.reinforce.discrete import REINFORCE
+from spurl.algorithms.reinforce.selfplay_sequential_discrete import REINFORCE
 from spurl.core import train, test
 from spurl.utils import save_model, load_model, save_environment_render
 
