@@ -39,7 +39,7 @@ reinforce.optimizer = tf.keras.optimizers.Adam(reinforce.learning_rate, epsilon=
 
 meta_trials = 512
 
-temp_path = r'./temp'
+temp_path = r'/raid/candi/zcemsus/spurl_temp/'
 if not os.path.exists(temp_path):
     os.mkdir(temp_path)
 
