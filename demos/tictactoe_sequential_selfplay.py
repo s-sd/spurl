@@ -1,4 +1,4 @@
-from spurl.algorithms.reinforce.selfplay_sequential_discrete import REINFORCE
+from spurl.algorithms.reinforce.self_play_sequential_discrete import REINFORCE
 from spurl.core import train, test
 from spurl.utils import save_model, load_model, save_environment_render
 
@@ -33,7 +33,7 @@ num_actions = env.action_space.n
 
 policy_network = build_policy_network(state_shape, num_actions)
 
-reinforce = REINFORCE(env, policy_network, artificial_truncation=256)
+reinforce = REINFORCE(env, policy_network, artificial_truncation=256,  self_play_type='vanilla', opponent_save_frequency=1, opponents_path=None)
 
 reinforce.optimizer = tf.keras.optimizers.Adam(reinforce.learning_rate, epsilon=1e-6, clipnorm=1e1)
 

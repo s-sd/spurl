@@ -5,7 +5,7 @@ import numpy as np
 import os
 
 class REINFORCE(discrete.REINFORCE):
-    def __init__(self, env, policy_network, learning_rate=0.001, gamma=0.99, artificial_truncation=None, self_play_type='vanilla', opponents_path=None):
+    def __init__(self, env, policy_network, learning_rate=0.001, gamma=0.99, artificial_truncation=None, self_play_type='vanilla', opponent_save_frequency=1, opponents_path=None):
         super().__init__(env, policy_network, learning_rate, gamma, artificial_truncation)
         self.self_play_type = self_play_type
         self.opponents_path = opponents_path
