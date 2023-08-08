@@ -9,6 +9,8 @@ import os
 
 from temp.envs.tictactoe import TicTacToeEnv
 
+from spurl.algorithms.reinforce import discrete
+
 tf.random.set_seed(42)
 np.random.seed(42)
 
@@ -35,23 +37,15 @@ reinforce = REINFORCE(env, policy_network, artificial_truncation=256)
 
 reinforce.optimizer = tf.keras.optimizers.Adam(reinforce.learning_rate, epsilon=1e-6, clipnorm=1e1)
 
-meta_trials = 64
+# states, rewards, actions = reinforce.run(2)
 
-temp_path = r'./temp'
-if not os.path.exists(temp_path):
-    os.mkdir(temp_path)
+meta_trials = 1024
 
 for meta_trial in range(meta_trials):
     print(f'\nMeta Trial: {meta_trial+1} / {meta_trials}\n')
-    reinforce = train(reinforce, trials=2, episodes_per_trial=8, epochs_per_trial=2, batch_size=16, verbose=True)    
+    reinforce = train(reinforce, trials=2, episodes_per_trial=32, epochs_per_trial=2, batch_size=32, verbose=True)    
     rewards, lengths = test(reinforce, trials=1, episodes_per_trial=4, deterministic=True)
-        
-    # if meta_trial % 8 == 0:
-        # save_model(reinforce, os.path.join(temp_path, f'model_pendulum_{meta_trial}'))
 
-# rendering_env = gym.make("Pendulum-v1", render_mode='rgb_array')
-
-# save_environment_render(rendering_env, algorithm=reinforce, save_path=os.path.join(temp_path, 'pendulum_trajectory'), deterministic=True, artificial_truncation=256)
 
 
 
