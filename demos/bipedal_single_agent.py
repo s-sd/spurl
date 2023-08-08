@@ -33,7 +33,7 @@ policy_network = build_policy_network(state_shape, action_size)
 initial_scale = 2.0
 minimum_scale = 0.2
 
-reinforce = REINFORCE(env, policy_network, scale=initial_scale, artificial_truncation=256)
+reinforce = REINFORCE(env, policy_network, scale=initial_scale, artificial_truncation=1600)
 
 reinforce.optimizer = tf.keras.optimizers.Adam(reinforce.learning_rate, epsilon=1e-6, clipnorm=1e1)
 
@@ -56,5 +56,5 @@ for meta_trial in range(meta_trials):
 
 rendering_env = gym.make("BipedalWalker-v3", hardcore=False, render_mode='rgb_array')
 
-save_environment_render(rendering_env, algorithm=reinforce, save_path=os.path.join(temp_path, 'bipedal_trajectory'), deterministic=True, artificial_truncation=2048)
+save_environment_render(rendering_env, algorithm=reinforce, save_path=os.path.join(temp_path, 'bipedal_trajectory'), deterministic=True, artificial_truncation=1600)
 

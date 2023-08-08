@@ -33,7 +33,7 @@ policy_network = build_policy_network(state_shape, action_size)
 initial_scale = 2.0 # tuning this really helps training
 minimum_scale = 0.2
 
-reinforce = REINFORCE(env, policy_network, scale=initial_scale, artificial_truncation=1600)
+reinforce = REINFORCE(env, policy_network, scale=initial_scale, artificial_truncation=256)
 
 reinforce.optimizer = tf.keras.optimizers.Adam(reinforce.learning_rate, epsilon=1e-6, clipnorm=1e1)
 
@@ -56,4 +56,4 @@ for meta_trial in range(meta_trials):
 
 rendering_env = gym.make("Pendulum-v1", render_mode='rgb_array')
 
-save_environment_render(rendering_env, algorithm=reinforce, save_path=os.path.join(temp_path, 'pendulum_trajectory'), deterministic=True, artificial_truncation=1600)
+save_environment_render(rendering_env, algorithm=reinforce, save_path=os.path.join(temp_path, 'pendulum_trajectory'), deterministic=True, artificial_truncation=256)
