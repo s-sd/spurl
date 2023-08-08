@@ -27,13 +27,14 @@ class REINFORCE(discrete.REINFORCE):
         return action
     
     
-    def select_action_self_play(self, player_type, state, deterministic, opponent_path=None):
-        match player_type:
-            case 0:
-                action = self.select_action(self.policy_network, state, deterministic)
-            case 1:
-                policy_net = tf.keras.models.load_model(opponent_path)
+    def select_action_self_play(self, player_num, state, deterministic=False, opponent_path=None):
+        if player_num == 0:
+            action = self.select_action(self.policy_network, state, deterministic)
+        else:
+            action = self.select_action(self.policy_network, state, deterministic)
+                # policy_net = tf.keras.models.load_model(opponent_path)
         # finish this function by adding action selection using opponent using the probability sampling
+        return action
     
     def invert_state(self, state):
         state[:, :, 0] *= -1
@@ -66,7 +67,7 @@ class REINFORCE(discrete.REINFORCE):
                 if self.env.current_player_num == 1:
                     state = self.invert_state(state)
                     
-                action = self.select_action(state, deterministic)
+                action = self.select_action_self_play(self.env.current_player_num, state, deterministic)
             
                 reshaped_action = np.reshape(np.squeeze(np.array(action, dtype=np.uint32)), self.env.action_space.shape)
                 values = self.env.step(reshaped_action)
