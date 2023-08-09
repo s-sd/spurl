@@ -2,6 +2,7 @@ import tensorflow as tf
 import tensorflow_probability as tfp
 import numpy as np
 from tqdm import tqdm
+import random
 
 class REINFORCE:
     def __init__(self, env, policy_network, learning_rate=0.001, gamma=0.99, artificial_truncation=None):
@@ -93,6 +94,9 @@ class REINFORCE:
         return states, actions, rewards
     
     def update(self, states, actions, rewards, epochs, batch_size, verbose=True):
+        train_data = list(zip(states, actions, rewards))
+        random.shuffle(train_data)
+        states, actions, rewards = zip(*train_data)
         for epoch in range(epochs):
             if verbose:
                 print(f'Epoch: {epoch+1}/{epochs}')

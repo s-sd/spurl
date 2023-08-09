@@ -19,6 +19,9 @@ def build_policy_network(state_shape, action_size):
     dropout2 = tf.keras.layers.Dropout(0.4)(dense2)
     dense3 = tf.keras.layers.Dense(32, activation='relu')(dropout2)    
     dense4 = tf.keras.layers.Dense(np.prod(action_size), activation='tanh')(dense3)
+    
+    scaled_outputs = tf.keras.layers.Lambda(lambda x: (x + 1) * 2 - 2)(dense4) # scale to action space
+    
     policy_network = tf.keras.Model(inputs=inputs, outputs=dense4)
     return policy_network
 
@@ -30,7 +33,7 @@ state_shape = env.observation_space.shape
 policy_network = build_policy_network(state_shape, action_size)
 
 # for linearly annealing scale
-initial_scale = 2.0 # tuning this really helps training
+initial_scale = 4.0 # tuning this really helps training
 minimum_scale = 0.2
 
 reinforce = REINFORCE(env, policy_network, scale=initial_scale, artificial_truncation=256)
