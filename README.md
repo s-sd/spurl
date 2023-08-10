@@ -18,8 +18,9 @@ Bipedal Walker
 Soccer Twos
 
 | Environment Type | Example (Solved by SPURL) |
-| :---        |    ---:   |
+| :---        |    :-:   |
 |Single-Agent Discrete Actions (Cartpole)| <img src="docs/assets/cartpole_spurl.gif" width="240"> |
+|Self-Play Discrete Actions (TicTacToe)| <img src="docs/assets/tictactoe_spurl.gif" width="96"> |
 
 SPURL currently demonstrates the following functionality:
 
