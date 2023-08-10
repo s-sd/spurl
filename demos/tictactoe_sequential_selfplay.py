@@ -59,7 +59,7 @@ for meta_trial in range(meta_trials):
     print(f'\nMeta Trial: {meta_trial+1} / {meta_trials}\n')
     reinforce = train(reinforce, trials=2, episodes_per_trial=32, epochs_per_trial=2, batch_size=32, verbose=True)    
     rewards, lengths = test(reinforce, trials=1, episodes_per_trial=4, deterministic=True)
-    if lengths > 6.0:
+    if lengths > 6.0: # keep training longer for better performance
         break
 
 # last tested commit a657e502c0f2dae9eb8afee3853ed8cb1885f49e
@@ -77,15 +77,15 @@ else:
 
 reinforce = REINFORCE_TicTacToe(env, policy_network, artificial_truncation=256, self_play_type='fictitious', opponent_save_frequency=8, opponents_path=opponents_path, noise_scale=0.2)
 
-reinforce.optimizer = tf.keras.optimizers.Adam(reinforce.learning_rate, epsilon=1e-6, clipnorm=1e1)
+reinforce.optimizer = tf.keras.optimizers.Adam(reinforce.learning_rate, clipnorm=1e1)
 
 meta_trials = 1024
 
 for meta_trial in range(meta_trials):
     print(f'\nMeta Trial: {meta_trial+1} / {meta_trials}\n')
-    reinforce = train(reinforce, trials=2, episodes_per_trial=16, epochs_per_trial=2, batch_size=32, verbose=True)    
+    reinforce = train(reinforce, trials=1, episodes_per_trial=16, epochs_per_trial=2, batch_size=32, verbose=True)    
     rewards, lengths = test(reinforce, trials=1, episodes_per_trial=4, deterministic=True)
-    if lengths > 6.0:
+    if lengths > 6.0: # keep training longer for better performance
         break
 
 # =============================================================================
@@ -128,8 +128,8 @@ meta_trials = 1024
 
 for meta_trial in range(meta_trials):
     print(f'\nMeta Trial: {meta_trial+1} / {meta_trials}\n')
-    reinforce = train(reinforce, trials=2, episodes_per_trial=8, epochs_per_trial=2, batch_size=16, verbose=True)    
+    reinforce = train(reinforce, trials=1, episodes_per_trial=16, epochs_per_trial=2, batch_size=32, verbose=True)    
     rewards, lengths = test(reinforce, trials=1, episodes_per_trial=4, deterministic=True)
-    if lengths > 6.0:
+    if lengths > 6.0: # keep training longer for better performance
         break
 
