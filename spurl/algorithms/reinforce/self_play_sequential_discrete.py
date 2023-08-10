@@ -3,12 +3,17 @@ import tensorflow as tf
 import tensorflow_probability as tfp
 import numpy as np
 import os
+import logging
+import warnings
+
+tf.get_logger().setLevel(logging.ERROR)
 
 class REINFORCE(discrete.REINFORCE):
     def __init__(self, env, policy_network, learning_rate=0.001, gamma=0.99, noise_scale=0.1, artificial_truncation=None, self_play_type='vanilla', opponent_save_frequency=1, opponents_path=None):
         super().__init__(env, policy_network, learning_rate, gamma, noise_scale, artificial_truncation)
         self.self_play_type = self_play_type
         self.opponents_path = opponents_path
+        self.opponent_save_frequency = opponent_save_frequency
     
     def select_action(self, policy, state, deterministic=False):
         state = np.array([state])
@@ -35,10 +40,10 @@ class REINFORCE(discrete.REINFORCE):
         
         return selected_opponent
     
-    def select_action_self_play(self, player_num, state, deterministic=False):
+    def select_opponent(self, player_num):
         
         if player_num == 0:
-            action = self.select_action(self.policy_network, state, deterministic)
+            policy_network = self.policy_network
         
         else:
             
@@ -48,29 +53,38 @@ class REINFORCE(discrete.REINFORCE):
             elif self.self_play_type == 'fictitious':
                 opponents_list = sorted(os.listdir(self.opponents_path))
                 opponent_probs = np.ones((len(opponents_list)))
-                dist = tfp.distributions.Categorical(probs=opponent_probs, dtype=tf.float32)
-                selected_opponent = int(dist.sample())
-                policy_network = tf.keras.models.load_model(os.path.join(self.opponents_path, opponents_list[int(selected_opponent)]))
+                if len(opponents_list) > 1.0:
+                    dist = tfp.distributions.Categorical(probs=opponent_probs, dtype=tf.float32)
+                    selected_opponent = int(dist.sample())
+                    policy_network = tf.keras.models.load_model(os.path.join(self.opponents_path, opponents_list[int(selected_opponent)]))
+                else:
+                    policy_network = self.policy_network
             
             elif self.self_play_type == 'prioritised':
                 opponents_list = sorted(os.listdir(self.opponents_path))
-                selected_opponent = self.opponent_sampler(opponents_list)
-                policy_network = tf.keras.models.load_model(os.path.join(self.opponents_path, opponents_list[int(selected_opponent)]))
+                if len(opponents_list) > 1.0:
+                    selected_opponent = self.opponent_sampler(opponents_list)
+                    policy_network = tf.keras.models.load_model(os.path.join(self.opponents_path, opponents_list[int(selected_opponent)]))
+                    print('selected from bank')
+                else:
+                    policy_network = self.policy_network
                                 
-            action = self.select_action(policy_network, state, deterministic)
+            # action = self.select_action(policy_network, state, deterministic)
         # policy_net = tf.keras.models.load_model(opponent_path)
         # finish this function by adding action selection using opponent using the probability sampling
-        return action
+        return policy_network
     
-    def invert_state(self, state):
-        state[:, :, 0] *= -1
-        return state
+    # def invert_state(self, state):
+    #     state[:, :, 0] *= -1
+    #     return state
         
     def run(self, num_episodes, discount_rewards=True, deterministic=False):
         # finish this function by saving models periodically
         rewards = []
         actions = []
         states = []
+        
+        episode_number = 0
         
         for i in range(num_episodes):
             state = self.env.reset()
@@ -86,14 +100,21 @@ class REINFORCE(discrete.REINFORCE):
             episode_actions_p2 = []
             episode_states_p2 = []
             
-            episode_number = 0
+            policy_network = self.select_opponent(0)
+            opponent_policy_network = self.select_opponent(1)
             
+            num_opponents = len(os.listdir(self.opponents_path))
+            
+            if episode_number % self.opponent_save_frequency == 0 and self.self_play_type != 'vanilla':
+                self.policy_network.save(os.path.join(self.opponents_path, str(num_opponents+1)))
+                
             while True:
                 
                 if self.env.current_player_num == 1:
                     state = self.invert_state(state)
-                    
-                action = self.select_action_self_play(self.env.current_player_num, state, deterministic)
+                    action = self.select_action(opponent_policy_network, state, deterministic)
+                else:
+                    action = self.select_action(policy_network, state, deterministic)
             
                 reshaped_action = np.reshape(np.squeeze(np.array(action, dtype=np.uint32)), self.env.action_space.shape)
                 values = self.env.step(reshaped_action)
@@ -119,16 +140,17 @@ class REINFORCE(discrete.REINFORCE):
                     if episode_number > self.artificial_truncation:
                         done = True
                 
-                episode_number += 1
-                
                 if done:
+                    episode_number += 1
                     episode_rewards_p1 = [elem[0] for elem in episode_rewards_p1]
                     episode_rewards_p2 = [elem[1] for elem in episode_rewards_p2]
                     if discount_rewards:
-                        discounted_rewards_p1 = self.compute_discounted_rewards(episode_rewards_p1).tolist()
-                        rewards += discounted_rewards_p1
-                        discounted_rewards_p2 = self.compute_discounted_rewards(episode_rewards_p2).tolist()
-                        rewards += discounted_rewards_p2
+                        with warnings.catch_warnings():
+                            warnings.simplefilter("ignore", category=RuntimeWarning)
+                            discounted_rewards_p1 = self.compute_discounted_rewards(episode_rewards_p1).tolist()
+                            rewards += discounted_rewards_p1
+                            discounted_rewards_p2 = self.compute_discounted_rewards(episode_rewards_p2).tolist()
+                            rewards += discounted_rewards_p2
                     else:
                         rewards += episode_rewards_p1
                         rewards += episode_rewards_p2

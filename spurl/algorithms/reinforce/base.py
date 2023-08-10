@@ -41,6 +41,9 @@ class REINFORCE:
         rewards = []
         actions = []
         states = []
+        
+        episode_number = 0
+        
         for i in range(num_episodes):
             state = self.env.reset()
             
@@ -50,9 +53,7 @@ class REINFORCE:
             episode_rewards = []
             episode_actions = []
             episode_states = []
-            
-            episode_number = 0
-            
+                        
             while True:
                 action = self.select_action(state, deterministic)
                 
@@ -75,9 +76,8 @@ class REINFORCE:
                     if episode_number > self.artificial_truncation:
                         done = True
                 
-                episode_number += 1
-                
                 if done:
+                    episode_number += 1
                     if discount_rewards:
                         discounted_rewards = self.compute_discounted_rewards(episode_rewards).tolist()
                         rewards += discounted_rewards
