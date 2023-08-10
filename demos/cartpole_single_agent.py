@@ -64,5 +64,5 @@ rendering_env = gym.make('CartPole-v1', render_mode='rgb_array')
 
 save_environment_render(rendering_env, algorithm=reinforce, save_path=os.path.join(temp_path, 'cartpole_trajectory'), deterministic=True, artificial_truncation=512)
 
-
+# last tested commit a62ad67e9aff61744afee38c957df1ddaa0b1094
 
