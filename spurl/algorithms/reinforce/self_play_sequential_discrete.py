@@ -65,7 +65,6 @@ class REINFORCE(discrete.REINFORCE):
                 if len(opponents_list) > 1.0:
                     selected_opponent = self.opponent_sampler(opponents_list)
                     policy_network = tf.keras.models.load_model(os.path.join(self.opponents_path, opponents_list[int(selected_opponent)]))
-                    print('selected from bank')
                 else:
                     policy_network = self.policy_network
                                 
@@ -108,6 +107,8 @@ class REINFORCE(discrete.REINFORCE):
             if episode_number % self.opponent_save_frequency == 0 and self.self_play_type != 'vanilla':
                 self.policy_network.save(os.path.join(self.opponents_path, str(num_opponents+1)))
                 
+            step_number = 0
+            
             while True:
                 
                 if self.env.current_player_num == 1:
@@ -135,9 +136,11 @@ class REINFORCE(discrete.REINFORCE):
                 
                 state = next_state
                 
+                step_number += 1
+                
                 #terminate episode at artificial truncation number of steps
                 if self.artificial_truncation is not None:
-                    if episode_number > self.artificial_truncation:
+                    if step_number > self.artificial_truncation:
                         done = True
                 
                 if done:

@@ -53,8 +53,11 @@ class REINFORCE:
             episode_rewards = []
             episode_actions = []
             episode_states = []
+            
+            step_number = 0
                         
             while True:
+                
                 action = self.select_action(state, deterministic)
                 
                 reshaped_action = np.reshape(np.squeeze(np.array(action, dtype=np.uint32)), self.env.action_space.shape)
@@ -71,9 +74,11 @@ class REINFORCE:
                 
                 state = next_state
                 
+                step_number += 1
+                
                 #terminate episode at artificial truncation number of steps
                 if self.artificial_truncation is not None:
-                    if episode_number > self.artificial_truncation:
+                    if step_number > self.artificial_truncation:
                         done = True
                 
                 if done:

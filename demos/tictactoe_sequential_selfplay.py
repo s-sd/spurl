@@ -6,6 +6,7 @@ import tensorflow as tf
 import gymnasium as gym
 import numpy as np
 import os
+import shutil
 
 from envs.tictactoe import TicTacToeEnv
 
@@ -55,7 +56,6 @@ for meta_trial in range(meta_trials):
     print(f'\nMeta Trial: {meta_trial+1} / {meta_trials}\n')
     reinforce = train(reinforce, trials=2, episodes_per_trial=32, epochs_per_trial=2, batch_size=32, verbose=True)    
     rewards, lengths = test(reinforce, trials=1, episodes_per_trial=4, deterministic=True)
-    print(lengths)
     if lengths > 6.0:
         break
     
@@ -66,7 +66,10 @@ for meta_trial in range(meta_trials):
 # =============================================================================
 
 opponents_path = r'./temp/tictactoe_ops'
-if not os.path.exists(opponents_path):
+if os.path.exists(opponents_path):
+    shutil.rmtree(opponents_path)
+    os.mkdir(opponents_path)
+else:
     os.mkdir(opponents_path)
 
 reinforce = REINFORCE_TicTacToe(env, policy_network, artificial_truncation=256, self_play_type='fictitious', opponent_save_frequency=8, opponents_path=opponents_path, noise_scale=0.2)
@@ -79,10 +82,30 @@ for meta_trial in range(meta_trials):
     print(f'\nMeta Trial: {meta_trial+1} / {meta_trials}\n')
     reinforce = train(reinforce, trials=2, episodes_per_trial=16, epochs_per_trial=2, batch_size=32, verbose=True)    
     rewards, lengths = test(reinforce, trials=1, episodes_per_trial=4, deterministic=True)
-    print(lengths)
     if lengths > 6.0:
         break
 
 # =============================================================================
 # Prioritised Fictitious Self-Play
 # =============================================================================
+
+opponents_path = r'./temp/tictactoe_ops'
+if os.path.exists(opponents_path):
+    shutil.rmtree(opponents_path)
+    os.mkdir(opponents_path)
+else:
+    os.mkdir(opponents_path)
+
+reinforce = REINFORCE_TicTacToe(env, policy_network, artificial_truncation=256, self_play_type='prioritised', opponent_save_frequency=8, opponents_path=opponents_path, noise_scale=0.2)
+
+reinforce.optimizer = tf.keras.optimizers.Adam(reinforce.learning_rate, epsilon=1e-6, clipnorm=1e1)
+
+meta_trials = 1024
+
+for meta_trial in range(meta_trials):
+    print(f'\nMeta Trial: {meta_trial+1} / {meta_trials}\n')
+    reinforce = train(reinforce, trials=2, episodes_per_trial=16, epochs_per_trial=2, batch_size=32, verbose=True)    
+    rewards, lengths = test(reinforce, trials=1, episodes_per_trial=4, deterministic=True)
+    if lengths > 6.0:
+        break
+
