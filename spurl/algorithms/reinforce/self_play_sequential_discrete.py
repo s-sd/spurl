@@ -5,8 +5,12 @@ import numpy as np
 import os
 import logging
 import warnings
+import re
 
 tf.get_logger().setLevel(logging.ERROR)
+
+def alphanum_key(key):
+    return [int(s) if s.isdigit() else s.lower() for s in re.split("([0-9]+)", key)]
 
 class REINFORCE(discrete.REINFORCE):
     def __init__(self, env, policy_network, learning_rate=0.001, gamma=0.99, noise_scale=0.1, artificial_truncation=None, self_play_type='vanilla', opponent_save_frequency=1, opponents_path=None):
@@ -51,7 +55,7 @@ class REINFORCE(discrete.REINFORCE):
                 policy_network = self.policy_network
                 
             elif self.self_play_type == 'fictitious':
-                opponents_list = sorted(os.listdir(self.opponents_path))
+                opponents_list = sorted(os.listdir(self.opponents_path), key=alphanum_key)
                 opponent_probs = np.ones((len(opponents_list)))
                 if len(opponents_list) > 1.0:
                     dist = tfp.distributions.Categorical(probs=opponent_probs, dtype=tf.float32)
@@ -61,7 +65,7 @@ class REINFORCE(discrete.REINFORCE):
                     policy_network = self.policy_network
             
             elif self.self_play_type == 'prioritised':
-                opponents_list = sorted(os.listdir(self.opponents_path))
+                opponents_list = sorted(os.listdir(self.opponents_path), key=alphanum_key)
                 if len(opponents_list) > 1.0:
                     selected_opponent = self.opponent_sampler(opponents_list)
                     policy_network = tf.keras.models.load_model(os.path.join(self.opponents_path, opponents_list[int(selected_opponent)]))

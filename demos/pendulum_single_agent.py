@@ -48,7 +48,7 @@ if not os.path.exists(temp_path):
 
 for meta_trial in range(meta_trials):
     print(f'\nMeta Trial: {meta_trial+1} / {meta_trials}\n')
-    reinforce = train(reinforce, trials=2, episodes_per_trial=8, epochs_per_trial=8, batch_size=32, verbose=True)    
+    reinforce = train(reinforce, trials=2, episodes_per_trial=8, epochs_per_trial=2, batch_size=16, verbose=True)
     rewards, lengths = test(reinforce, trials=1, episodes_per_trial=4, deterministic=True)
     
     # linearly annealling scale as time goes on
