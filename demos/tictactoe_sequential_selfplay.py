@@ -16,13 +16,13 @@ env = TicTacToeEnv()
 
 state_shape = env.observation_space.shape
 action_space = env.action_space
-output_shape = (action_space.n,)
+num_actions = (action_space.n,)
 
 policy_network = build_policy_network(state_shape,
-                                      output_shape,
-                                      action_space,
+                                      action_size = num_actions,
+                                      action_space = action_space,
                                       policy_type = 'fcn',
-                                      layers = [[],[128, 64, 32]])
+                                      layers = [128, 64, 32])
 
 reinforce = REINFORCE(env, policy_network, artificial_truncation=256)
 

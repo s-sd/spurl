@@ -40,12 +40,11 @@ env = DummyEnv(num_actions)
 # Building policy network
 state_shape = env.observation_space.shape
 action_space = env.action_space
-output_shape = (action_space.n,)
 policy_network = build_policy_network(state_shape,
-                                      output_shape,
-                                      action_space,
+                                      action_size = num_actions,
+                                      action_space = action_space,
                                       policy_type = 'fcn',
-                                      layers = [[],[128]])
+                                      layers = [128])
 
 reinforce = REINFORCE(env, policy_network)
 

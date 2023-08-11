@@ -13,12 +13,12 @@ np.random.seed(42)
 env = gym.make("Pendulum-v1")
 
 action_space = env.action_space
-output_shape = env.action_space.shape
+action_size = env.action_space.shape
 state_shape = env.observation_space.shape
 
 policy_network = build_policy_network(state_shape, 
-                                      output_shape, 
-                                      action_space,
+                                      action_size = action_size, 
+                                      action_space = action_space,
                                       policy_type = 'fcn',
                                       layers = [[], [128, 64, 32]],
                                       activation_fn = 'tanh')

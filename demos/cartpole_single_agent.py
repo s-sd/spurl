@@ -15,12 +15,11 @@ env = gym.make('CartPole-v1')
 state_shape = env.observation_space.shape
 action_space = env.action_space
 num_actions = action_space.n
-output_shape = (action_space.n,)
 
 # Build policy network 
 policy_network = build_policy_network(state_shape, 
-                                      output_shape, 
-                                      action_space, 
+                                      action_size = num_actions, 
+                                      action_space = action_space, 
                                       policy_type = 'fcn',
                                       layers = [[], [64, 32, 14]])
 
