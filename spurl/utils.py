@@ -184,8 +184,8 @@ def build_policy_network(observation_space, action_space, policy_type, layers, a
     Builds a policy network using Keras
     
     Parameters:
-        observation_space (gymnasium.spaces object) : Dfines obs space to check for input size 
-        action_space (gymnasium.spaces object) : Defines action space, to check for action type 
+        observation_space (gymnasium.spaces object) : Defines obs space to check for input size 
+        action_space (gymnasium.spaces object) : Defines action space, to check for action type and action size
         policy_type (str) : Defines type of network used (conv or fully connected)
         layers (list) : For 'fcn', defines size of dense layers. For 'cnn', defines cnn filter sizes and size of dense layers
         activation_fn (str) : Defines activation function used for final output layer.
