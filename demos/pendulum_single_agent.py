@@ -10,33 +10,28 @@ import os
 tf.random.set_seed(42)
 np.random.seed(42)
 
-<<<<<<< HEAD
-=======
-def build_policy_network(state_shape, action_size):
-    inputs = tf.keras.layers.Input(shape=state_shape)
-    flat = tf.keras.layers.Flatten()(inputs)
-    dense1 = tf.keras.layers.Dense(128, activation='relu')(flat)
-    dropout1 = tf.keras.layers.Dropout(0.4)(dense1)
-    dense2 = tf.keras.layers.Dense(64, activation='relu')(dropout1)
-    dropout2 = tf.keras.layers.Dropout(0.4)(dense2)
-    dense3 = tf.keras.layers.Dense(32, activation='relu')(dropout2)    
-    dense4 = tf.keras.layers.Dense(np.prod(action_size), activation='tanh')(dense3)
+# def build_policy_network(state_shape, action_size):
+#     inputs = tf.keras.layers.Input(shape=state_shape)
+#     flat = tf.keras.layers.Flatten()(inputs)
+#     dense1 = tf.keras.layers.Dense(128, activation='relu')(flat)
+#     dropout1 = tf.keras.layers.Dropout(0.4)(dense1)
+#     dense2 = tf.keras.layers.Dense(64, activation='relu')(dropout1)
+#     dropout2 = tf.keras.layers.Dropout(0.4)(dense2)
+#     dense3 = tf.keras.layers.Dense(32, activation='relu')(dropout2)    
+#     dense4 = tf.keras.layers.Dense(np.prod(action_size), activation='tanh')(dense3)
     
-    scaled_outputs = tf.keras.layers.Lambda(lambda x: (x + 1) * 2 - 2)(dense4) # scale to action space
+#     scaled_outputs = tf.keras.layers.Lambda(lambda x: (x + 1) * 2 - 2)(dense4) # scale to action space
     
-    policy_network = tf.keras.Model(inputs=inputs, outputs=scaled_outputs)
-    return policy_network
+#     policy_network = tf.keras.Model(inputs=inputs, outputs=scaled_outputs)
+#     return policy_network
 
->>>>>>> main
 env = gym.make("Pendulum-v1")
 
 action_space = env.action_space
-action_size = env.action_space.shape
-state_shape = env.observation_space.shape
+state_space = env.observation_space
 
-policy_network = build_policy_network(state_shape, 
-                                      action_size = action_size, 
-                                      action_space = action_space,
+policy_network = build_policy_network(state_space, 
+                                      action_space,
                                       policy_type = 'fcn',
                                       layers = [128, 64, 32],
                                       activation_fn = 'tanh')

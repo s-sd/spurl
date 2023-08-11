@@ -39,11 +39,10 @@ action_size = (2, 2)
 env = DummyEnv(action_size)
 
 action_space = env.action_space
-state_shape = env.observation_space.shape
+state_space = env.observation_space
 
-policy_network = build_policy_network(state_shape, 
-                                      action_size = action_size, 
-                                      action_space = action_space,
+policy_network = build_policy_network(state_space, 
+                                      action_space,
                                       policy_type = 'fcn',
                                       layers = [128],
                                       activation_fn = 'linear')

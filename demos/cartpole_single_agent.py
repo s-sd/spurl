@@ -10,31 +10,26 @@ import os
 tf.random.set_seed(42)
 np.random.seed(42)
 
-<<<<<<< HEAD
-=======
-def build_policy_network(state_shape, num_actions):
-    inputs = tf.keras.layers.Input(shape=state_shape)
-    flat = tf.keras.layers.Flatten()(inputs)
-    dense1 = tf.keras.layers.Dense(64, activation='relu')(flat)
-    dropout1 = tf.keras.layers.Dropout(0.4)(dense1)
-    dense2 = tf.keras.layers.Dense(32, activation='relu')(dropout1)
-    dropout2 = tf.keras.layers.Dropout(0.4)(dense2)
-    dense3 = tf.keras.layers.Dense(14, activation='relu')(dropout2)     
-    dense4 = tf.keras.layers.Dense(num_actions, activation='softmax')(dense3)
-    policy_network = tf.keras.Model(inputs=inputs, outputs=dense4)
-    return policy_network
+# def build_policy_network(state_shape, num_actions):
+#     inputs = tf.keras.layers.Input(shape=state_shape)
+#     flat = tf.keras.layers.Flatten()(inputs)
+#     dense1 = tf.keras.layers.Dense(64, activation='relu')(flat)
+#     dropout1 = tf.keras.layers.Dropout(0.4)(dense1)
+#     dense2 = tf.keras.layers.Dense(32, activation='relu')(dropout1)
+#     dropout2 = tf.keras.layers.Dropout(0.4)(dense2)
+#     dense3 = tf.keras.layers.Dense(14, activation='relu')(dropout2)     
+#     dense4 = tf.keras.layers.Dense(num_actions, activation='softmax')(dense3)
+#     policy_network = tf.keras.Model(inputs=inputs, outputs=dense4)
+#     return policy_network
 
->>>>>>> main
 env = gym.make('CartPole-v1')
 
-state_shape = env.observation_space.shape
+state_space = env.observation_space
 action_space = env.action_space
-num_actions = action_space.n
 
 # Build policy network 
-policy_network = build_policy_network(state_shape, 
-                                      action_size = num_actions, 
-                                      action_space = action_space, 
+policy_network = build_policy_network(state_space, 
+                                      action_space, 
                                       policy_type = 'fcn',
                                       layers = [64, 32, 14])
 
