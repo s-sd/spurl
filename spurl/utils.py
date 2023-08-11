@@ -187,9 +187,9 @@ def build_policy_network(state_shape, action_size, action_space, policy_type, la
     Parameters:
         state_shape (tuple) : shape of input state 
         action_size (tuple or int) : shape of output for continuous spaces or number of actions for discrete spaces
-        action_space (str) : Defines the action type as 'continuous' 'discrete' or 'multi-discrete'
+        action_space (gymnasium.spaces object) : Defines action space, to check for action type 
         policy_type (str) : Defines type of network used (conv or fully connected)
-        layers (list) : Defines size of dense layers for fcn, and size of filters and dense layers for cnn 
+        layers (list) : For 'fcn', defines size of dense layers. For 'cnn', defines cnn filter sizes and size of dense layers
         activation_fn (str) : Defines activation function used for final output layer.
         
     Note: 
@@ -201,6 +201,10 @@ def build_policy_network(state_shape, action_size, action_space, policy_type, la
         activation_fn : 
             - Users can define which activation to use for continuous action spaces
             - For discrete spaces, default activation function used is softmax
+            
+        action_space : 
+            - action_type is defined internally within function, based on action_space object provided. 
+            - Box spaces are defined as continuous, whilst Discrete spaces are defined as discrete action types. 
     
     Returns:
         tf.keras.Model : Policy network model
@@ -228,7 +232,6 @@ def build_policy_network(state_shape, action_size, action_space, policy_type, la
         # Turn number of actions into tuple for networks 
         output_shape  = (action_size,) 
 
-    
     # Checks which action space it is, discrete, continuous or multidiscrete
     space_type = type(action_space)
 
