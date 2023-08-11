@@ -21,7 +21,7 @@ policy_network = build_policy_network(state_shape,
                                       action_size = num_actions, 
                                       action_space = action_space, 
                                       policy_type = 'fcn',
-                                      layers = [[], [64, 32, 14]])
+                                      layers = [64, 32, 14])
 
 reinforce = REINFORCE(env, policy_network, artificial_truncation=512)
 

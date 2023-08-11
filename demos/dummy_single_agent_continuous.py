@@ -1,5 +1,5 @@
 from spurl.algorithms.reinforce.continuous import REINFORCE
-from spurl.utils import * 
+from spurl.utils import save_model, load_model, save_environment_render, build_policy_network
 from spurl.core import train, test
 
 import tensorflow as tf

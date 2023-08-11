@@ -20,7 +20,7 @@ policy_network = build_policy_network(state_shape,
                                       action_size = action_size, 
                                       action_space = action_space,
                                       policy_type = 'fcn',
-                                      layers = [[], [128, 64, 32]],
+                                      layers = [128, 64, 32],
                                       activation_fn = 'tanh')
 
 # for linearly annealing scale
