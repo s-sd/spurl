@@ -146,7 +146,7 @@ def build_fcn(state_shape, output_shape, dense_layers, action_type, add_dropout 
     Parameters: 
         state_shape (tuple) : shape of input state 
         output_shape (tuple) : shape of output (actions or value)
-        layers (list) : layers as a list. Leave first item blank, as only for []
+        layers (list) : number of nodes for each dense layer 
         action_type (str) : determines final output layer. Can take "DISCRETE", "CONTINUOUS" or "MULTIDISCRETE"
         add_dropout (bool) : Whether to include drop out layers
     Returns:
@@ -155,10 +155,9 @@ def build_fcn(state_shape, output_shape, dense_layers, action_type, add_dropout 
     Example:
         state_shape = (84, 84, 4)
         output_shape = 6
-        layers=[[],[32, 32,]] # leave first item blank as only for cnn
+        layers=[32,32] 
         action_type = 'DISCRETE'
         model = build_policy_network(state_shape, output_shape, num_actions, action_type)
-        
     """
     
     num_layers = len(dense_layers) 
@@ -194,11 +193,14 @@ def build_policy_network(state_shape, action_size, action_space, policy_type, la
         activation_fn (str) : Defines activation function used for final output layer.
         
     Note: 
-        for layers : for cnn specify cnn, fcn blocks as [[], []]
-        for fcn, leave first as blank [[], [x,x]] 
+        layers : 
+            - for cnn, provide a list with two separate lists, one for cnn filter size 
+            and one for number of nodes for each dense layer. Ie [[2,2], [32,32]]
+            - for fcn, provide a single list [] describes size of each dense layer. Ie [32,32]
         
-        activation_fn : Use can define which activation to use for continuous action spaces, 
-        but for discrete spaces default activation function used is softmax
+        activation_fn : 
+            - Users can define which activation to use for continuous action spaces
+            - For discrete spaces, default activation function used is softmax
     
     Returns:
         tf.keras.Model : Policy network model
@@ -207,16 +209,16 @@ def build_policy_network(state_shape, action_size, action_space, policy_type, la
     
         # For cnn use two lists : one for filter size for CNN layers, and one for number of nodes used for each dense layer
         state_shape = (84, 84, 4)
-        output_shape = 6
+        action_size = 6
         layers=[[2, 3, 3],[32, 32]]
-        model = build_policy_network(state_shape, num_actions)
+        model = build_policy_network(state_shape, action_size, layers)
         
         # For fcn 
+        state_shape = (84, 84, 4)
+        action_size = 6
         layers=[32,32]
-        
-        
-        
-        
+        model = build_policy_network(state_shape, action_size, layers)
+         
     """
     
     # Use action size as output shape of networks 
@@ -227,20 +229,25 @@ def build_policy_network(state_shape, action_size, action_space, policy_type, la
         output_shape  = (action_size,) 
 
     
-    match type(action_space): 
-        case gymnasium.spaces.discrete.Discrete:
-            action_type = 'DISCRETE'
-        case gymnasium.spaces.Box:
-            action_type = 'CONTINUOUS'
-        case gymnasium.spaces.MultiDiscrete:
-            action_type = 'MULTIDISCRETE'
-    
+    # Checks which action space it is, discrete, continuous or multidiscrete
+    space_type = type(action_space)
+
+    if space_type == gymnasium.spaces.discrete.Discrete:
+        action_type = 'DISCRETE'
+    elif space_type == gymnasium.spaces.Box:
+        action_type = 'CONTINUOUS'
+    elif space_type == gymnasium.spaces.MultiDiscrete: 
+        action_type = 'MULTIDISCRETE'
+    else:
+        raise ValueError("Action space not recognised")
+
     # initialise policy network model to be used 
-    match policy_type: 
-        case 'cnn':
-            model = build_cnn(state_shape, output_shape, layers, action_type, activation_fn)
-        case 'fcn':
-            model = build_fcn(state_shape, output_shape, layers, action_type)
+    if policy_type == 'cnn': 
+        model = build_cnn(state_shape, output_shape, layers, action_type, activation_fn)
+    elif policy_type == 'fcn':
+        model = build_fcn(state_shape, output_shape, layers, action_type)
+    else: 
+        raise ValueError("Policy type not recognised, please type 'cnn' or 'fcn' only")
     
     return model 
 
