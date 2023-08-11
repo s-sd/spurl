@@ -2,6 +2,7 @@ import tensorflow as tf
 import tensorflow_probability as tfp
 import numpy as np
 from tqdm import tqdm
+import random
 
 class REINFORCE:
     def __init__(self, env, policy_network, learning_rate=0.001, gamma=0.99, artificial_truncation=None):
@@ -40,6 +41,9 @@ class REINFORCE:
         rewards = []
         actions = []
         states = []
+        
+        episode_number = 0
+        
         for i in range(num_episodes):
             state = self.env.reset()
             
@@ -50,9 +54,10 @@ class REINFORCE:
             episode_actions = []
             episode_states = []
             
-            episode_number = 0
-            
+            step_number = 0
+                        
             while True:
+                
                 action = self.select_action(state, deterministic)
                 
                 reshaped_action = np.reshape(np.squeeze(np.array(action, dtype=np.uint32)), self.env.action_space.shape)
@@ -69,14 +74,15 @@ class REINFORCE:
                 
                 state = next_state
                 
+                step_number += 1
+                
                 #terminate episode at artificial truncation number of steps
                 if self.artificial_truncation is not None:
-                    if episode_number > self.artificial_truncation:
+                    if step_number > self.artificial_truncation:
                         done = True
                 
-                episode_number += 1
-                
                 if done:
+                    episode_number += 1
                     if discount_rewards:
                         discounted_rewards = self.compute_discounted_rewards(episode_rewards).tolist()
                         rewards += discounted_rewards
@@ -93,6 +99,9 @@ class REINFORCE:
         return states, actions, rewards
     
     def update(self, states, actions, rewards, epochs, batch_size, verbose=True):
+        train_data = list(zip(states, actions, rewards))
+        random.shuffle(train_data)
+        states, actions, rewards = zip(*train_data)
         for epoch in range(epochs):
             if verbose:
                 print(f'Epoch: {epoch+1}/{epochs}')

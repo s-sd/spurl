@@ -1,6 +1,5 @@
 import tensorflow as tf
 import numpy as np
-import matplotlib.pyplot as plt
 import os
 import gymnasium
 
@@ -41,7 +40,7 @@ def save_environment_render(rendering_env, algorithm, save_path, deterministic=F
         reshaped_action = np.reshape(np.squeeze(np.array(action, dtype=np.uint32)), algorithm.env.action_space.shape)
         state, _, done, _, _ = algorithm.env.step(reshaped_action)
         image = algorithm.env.render()
-        plt.imsave(os.path.join(save_path, f'step_{step}.png'), image) # change to save image
+        tf.keras.utils.save_img(os.path.join(save_path, f'step_{step}.png'), image) # change to save image
         step += 1
         if artificial_truncation is not None:
             if step > artificial_truncation:
@@ -179,14 +178,13 @@ def build_fcn(state_shape, output_shape, dense_layers, action_type, add_dropout 
     model = tf.keras.Model(inputs=inputs, outputs=dense_output)
     return model 
 
-def build_policy_network(state_shape, action_size, action_space, policy_type, layers, activation_fn = 'linear'): 
+def build_policy_network(observation_space, action_space, policy_type, layers, activation_fn = 'linear'): 
     
     """
     Builds a policy network using Keras
     
     Parameters:
-        state_shape (tuple) : shape of input state 
-        action_size (tuple or int) : shape of output for continuous spaces or number of actions for discrete spaces
+        observation_space (gymnasium.spaces object) : Dfines obs space to check for input size 
         action_space (gymnasium.spaces object) : Defines action space, to check for action type 
         policy_type (str) : Defines type of network used (conv or fully connected)
         layers (list) : For 'fcn', defines size of dense layers. For 'cnn', defines cnn filter sizes and size of dense layers
@@ -225,30 +223,33 @@ def build_policy_network(state_shape, action_size, action_space, policy_type, la
          
     """
     
-    # Use action size as output shape of networks 
-    if type(action_size) == tuple: 
-        output_shape = action_size 
-    else: 
-        # Turn number of actions into tuple for networks 
-        output_shape  = (action_size,) 
-
-    # Checks which action space it is, discrete, continuous or multidiscrete
+    # Define state shape 
+    state_shape = observation_space.shape
+    
+    # Checks which action space type it is: discrete, continuous or multidiscrete
     space_type = type(action_space)
 
+    # Define action space and action size 
     if space_type == gymnasium.spaces.discrete.Discrete:
         action_type = 'DISCRETE'
+        action_size = (action_space.n,)
+        
     elif space_type == gymnasium.spaces.Box:
         action_type = 'CONTINUOUS'
+        action_size = action_space.shape
+        
     elif space_type == gymnasium.spaces.MultiDiscrete: 
         action_type = 'MULTIDISCRETE'
+        action_size = (action_space.n,)
+    
     else:
         raise ValueError("Action space not recognised")
-
+    
     # initialise policy network model to be used 
     if policy_type == 'cnn': 
-        model = build_cnn(state_shape, output_shape, layers, action_type, activation_fn)
+        model = build_cnn(state_shape, action_size, layers, action_type, activation_fn)
     elif policy_type == 'fcn':
-        model = build_fcn(state_shape, output_shape, layers, action_type)
+        model = build_fcn(state_shape, action_size, layers, action_type)
     else: 
         raise ValueError("Policy type not recognised, please type 'cnn' or 'fcn' only")
     

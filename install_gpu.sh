@@ -21,7 +21,7 @@ source $CONDA_PREFIX/etc/conda/activate.d/env_vars.sh
 mkdir -p $CONDA_PREFIX/lib/nvvm/libdevice
 cp $CONDA_PREFIX/lib/libdevice.10.bc $CONDA_PREFIX/lib/nvvm/libdevice/
 
-conda install gymnasium matplotlib tqdm
+conda install gymnasium tqdm
 
 pip install tensorflow_probability
 

@@ -4,8 +4,9 @@ import tensorflow_probability as tfp
 import numpy as np
 
 class REINFORCE(base.REINFORCE):
-    def __init__(self, env, policy_network, learning_rate=0.001, gamma=0.99, artificial_truncation=None):
+    def __init__(self, env, policy_network, learning_rate=0.001, gamma=0.99, noise_scale=0.1, artificial_truncation=None):
         super().__init__(env, policy_network, learning_rate, gamma, artificial_truncation)
+        self.noise_scale = noise_scale
         
     def select_action(self, state, deterministic=False):
         state = np.array([state])
@@ -21,7 +22,8 @@ class REINFORCE(base.REINFORCE):
             action = dist.sample()
         
         else:
-            dist = tfp.distributions.Categorical(probs=action_probs, dtype=tf.float32)
+            noised_action_probs = np.array(action_probs) + (np.random.randn(*np.shape(action_probs)) * self.noise_scale)
+            dist = tfp.distributions.Categorical(probs=noised_action_probs, dtype=tf.float32) # replcae with action_probs if no noise
             action = dist.sample()
         return action
     
