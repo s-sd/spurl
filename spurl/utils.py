@@ -138,7 +138,7 @@ def build_cnn(state_shape, output_shape, layers, action_type, add_dropout = True
      
     return model 
 
-def build_fcn(state_shape, output_shape, layers, action_type, add_dropout = True): 
+def build_fcn(state_shape, output_shape, dense_layers, action_type, add_dropout = True): 
     
     """
     Builds a fully connected network to be used as a policy network
@@ -161,7 +161,6 @@ def build_fcn(state_shape, output_shape, layers, action_type, add_dropout = True
         
     """
     
-    dense_layers = layers[1]
     num_layers = len(dense_layers) 
     inputs = tf.keras.layers.Input(shape=state_shape)
     flat = tf.keras.layers.Flatten()(inputs)
@@ -181,17 +180,17 @@ def build_fcn(state_shape, output_shape, layers, action_type, add_dropout = True
     model = tf.keras.Model(inputs=inputs, outputs=dense_output)
     return model 
 
-def build_policy_network(state_shape, output_shape, action_space, policy_type, layers, activation_fn = 'linear'): 
+def build_policy_network(state_shape, action_size, action_space, policy_type, layers, activation_fn = 'linear'): 
     
     """
     Builds a policy network using Keras
     
     Parameters:
         state_shape (tuple) : shape of input state 
-        output_shape (tuple) : shape of output (actions or value)
+        action_size (tuple or int) : shape of output for continuous spaces or number of actions for discrete spaces
         action_space (str) : Defines the action type as 'continuous' 'discrete' or 'multi-discrete'
         policy_type (str) : Defines type of network used (conv or fully connected)
-        layers (array) : layers=[[2, 3, 3],[32, 32]] # first is list of cnn blocks, second is number of nodes 
+        layers (list) : Defines size of dense layers for fcn, and size of filters and dense layers for cnn 
         activation_fn (str) : Defines activation function used for final output layer.
         
     Note: 
@@ -206,18 +205,28 @@ def build_policy_network(state_shape, output_shape, action_space, policy_type, l
         
     Example:
     
-        # For cnn 
+        # For cnn use two lists : one for filter size for CNN layers, and one for number of nodes used for each dense layer
         state_shape = (84, 84, 4)
         output_shape = 6
         layers=[[2, 3, 3],[32, 32]]
         model = build_policy_network(state_shape, num_actions)
         
         # For fcn 
-        layers=[[32,32]]
+        layers=[32,32]
+        
+        
         
         
     """
-        
+    
+    # Use action size as output shape of networks 
+    if type(action_size) == tuple: 
+        output_shape = action_size 
+    else: 
+        # Turn number of actions into tuple for networks 
+        output_shape  = (action_size,) 
+
+    
     match type(action_space): 
         case gymnasium.spaces.discrete.Discrete:
             action_type = 'DISCRETE'
