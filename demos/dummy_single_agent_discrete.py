@@ -33,6 +33,15 @@ class DummyEnv(gym.Env):
         self.step_num = 0
         return np.random.rand(32, 32)
 
+## An example of how to build policy networks from scratch 
+# def build_policy_network(state_shape, num_actions):
+#     inputs = tf.keras.layers.Input(shape=state_shape)
+#     flat = tf.keras.layers.Flatten()(inputs)
+#     dense1 = tf.keras.layers.Dense(128, activation='relu')(flat)
+#     dense2 = tf.keras.layers.Dense(num_actions, activation='softmax')(dense1)
+#     policy_network = tf.keras.Model(inputs=inputs, outputs=dense2)
+#     return policy_network
+
 num_actions = 4
 
 env = DummyEnv(num_actions)
