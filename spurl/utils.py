@@ -60,17 +60,16 @@ def add_final_layer(input, output_shape, action_type, activation_fn = 'linear'):
         action_type (str)
         activation_fn (str) : Defines which activation function to use for continuous cases only
     """
+    if action_type == 'DISCRETE':
+        output = tf.keras.layers.Dense(np.prod(output_shape), activation='softmax')(input)
+    elif action_type == 'CONTINUOUS':
+        dense_output = tf.keras.layers.Dense(np.prod(output_shape), activation=activation_fn)(input)
+        output = tf.keras.layers.Reshape(output_shape)(dense_output)
+    elif action_type == 'MULTI-DISCRETE':
+        raise("Not yet implemented")
+    else:
+        raise ValueError("Action type not recognised as discrete/continuous or multi-discrete")    
     
-    match action_type: 
-        case 'DISCRETE':
-            output = tf.keras.layers.Dense(np.prod(output_shape), activation='softmax')(input)
-        case 'CONTINUOUS':
-            dense_output = tf.keras.layers.Dense(np.prod(output_shape), activation=activation_fn)(input)
-            output = tf.keras.layers.Reshape(output_shape)(dense_output)
-        case 'MULTI-DISCRETE':
-            #TODO : implement 
-            raise("Not yet implemented")
-        
     return output
        
 def build_cnn(state_shape, output_shape, layers, action_type, add_dropout = True, activation_fn = 'linear'):
