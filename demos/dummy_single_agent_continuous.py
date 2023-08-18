@@ -1,5 +1,5 @@
 from spurl.algorithms.reinforce.continuous import REINFORCE
-
+from spurl.utils import save_model, load_model, save_environment_render, build_policy_network
 from spurl.core import train, test
 
 import tensorflow as tf
@@ -8,15 +8,6 @@ import numpy as np
 
 tf.random.set_seed(42)
 np.random.seed(42)
-
-def build_policy_network(state_shape, action_size):
-    inputs = tf.keras.layers.Input(shape=state_shape)
-    flat = tf.keras.layers.Flatten()(inputs)
-    dense1 = tf.keras.layers.Dense(128, activation='relu')(flat)
-    dense2 = tf.keras.layers.Dense(np.prod(action_size), activation='linear')(dense1)
-    reshape = tf.keras.layers.Reshape(action_size)(dense2)
-    policy_network = tf.keras.Model(inputs=inputs, outputs=reshape)
-    return policy_network
 
 # learn to always pick 0.5s
 class DummyEnv(gym.Env):
@@ -43,14 +34,31 @@ class DummyEnv(gym.Env):
         self.step_num = 0
         return np.random.rand(32, 32)
 
+## An example of how to build policy networks from scratch 
+# def build_policy_network(state_shape, action_size):
+#     inputs = tf.keras.layers.Input(shape=state_shape)
+#     flat = tf.keras.layers.Flatten()(inputs)
+#     dense1 = tf.keras.layers.Dense(128, activation='relu')(flat)
+#     dense2 = tf.keras.layers.Dense(np.prod(action_size), activation='linear')(dense1)
+#     reshape = tf.keras.layers.Reshape(action_size)(dense2)
+#     policy_network = tf.keras.Model(inputs=inputs, outputs=reshape)
+#     return policy_network
+
 action_size = (2, 2)
 
 env = DummyEnv(action_size)
 
-policy_network = build_policy_network((32,32), action_size)
+action_space = env.action_space
+state_space = env.observation_space
+
+policy_network = build_policy_network(state_space, 
+                                      action_space,
+                                      policy_type = 'fcn',
+                                      layers = [128],
+                                      activation_fn = 'linear')
 
 reinforce = REINFORCE(env, policy_network, scale=0.2)
 
-reinforce = train(reinforce, trials=4, episodes_per_trial=16, epochs_per_trial=2, batch_size=32, verbose=True)
+reinforce = train(reinforce, trials=12, episodes_per_trial=16, epochs_per_trial=1, batch_size=16, verbose=True)
     
 history = test(reinforce, trials=2, episodes_per_trial=4, deterministic=True)

@@ -1,6 +1,7 @@
 from spurl.algorithms.reinforce.discrete import REINFORCE
 
 from spurl.core import train, test
+from spurl.utils import save_model, load_model, save_environment_render, build_policy_network 
 
 import tensorflow as tf
 import gymnasium as gym
@@ -8,14 +9,6 @@ import numpy as np
 
 tf.random.set_seed(42)
 np.random.seed(42)
-
-def build_policy_network(state_shape, num_actions):
-    inputs = tf.keras.layers.Input(shape=state_shape)
-    flat = tf.keras.layers.Flatten()(inputs)
-    dense1 = tf.keras.layers.Dense(128, activation='relu')(flat)
-    dense2 = tf.keras.layers.Dense(num_actions, activation='softmax')(dense1)
-    policy_network = tf.keras.Model(inputs=inputs, outputs=dense2)
-    return policy_network
 
 # learn to always pick 0
 class DummyEnv(gym.Env):
@@ -40,14 +33,29 @@ class DummyEnv(gym.Env):
         self.step_num = 0
         return np.random.rand(32, 32)
 
+## An example of how to build policy networks from scratch 
+# def build_policy_network(state_shape, num_actions):
+#     inputs = tf.keras.layers.Input(shape=state_shape)
+#     flat = tf.keras.layers.Flatten()(inputs)
+#     dense1 = tf.keras.layers.Dense(128, activation='relu')(flat)
+#     dense2 = tf.keras.layers.Dense(num_actions, activation='softmax')(dense1)
+#     policy_network = tf.keras.Model(inputs=inputs, outputs=dense2)
+#     return policy_network
+
 num_actions = 4
 
 env = DummyEnv(num_actions)
 
-policy_network = build_policy_network((32,32), num_actions)
+# Building policy network
+state_space = env.observation_space
+action_space = env.action_space
+policy_network = build_policy_network(state_space,
+                                      action_space,
+                                      policy_type = 'fcn',
+                                      layers = [128])
 
 reinforce = REINFORCE(env, policy_network)
 
-reinforce = train(reinforce, trials=8, episodes_per_trial=8, epochs_per_trial=2, batch_size=16, verbose=True)
+reinforce = train(reinforce, trials=1, episodes_per_trial=4, epochs_per_trial=1, batch_size=64, verbose=True)
 
 history = test(reinforce, trials=2, episodes_per_trial=4, deterministic=True)
