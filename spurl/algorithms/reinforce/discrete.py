@@ -13,7 +13,7 @@ class REINFORCE(base.REINFORCE):
         action_probs = self.policy_network(state)
         
         if np.isnan(action_probs).any():
-            raise ValueError('Network outputs contains NaN') 
+            raise ValueError(f'Network outputs contain NaN: {action_probs}, {state}') 
             # suggestions: reduce network size, clip grads, scale states, add regularisation
         
         if deterministic:

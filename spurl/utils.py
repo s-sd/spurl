@@ -131,7 +131,7 @@ def build_cnn(state_shape, output_shape, layers, action_type, add_dropout = True
     # Final output layers 
     output = add_final_layer(dense, output_shape, action_type, activation_fn)
     
-    # Build model
+    # Build model
     model = tf.keras.Model(inputs=inputs, outputs=output)
      
     return model 
@@ -185,7 +185,7 @@ def build_policy_network(observation_space, action_space, policy_type, layers, a
     Parameters:
         observation_space (gymnasium.spaces object) : Defines obs space to check for input size 
         action_space (gymnasium.spaces object) : Defines action space, to check for action type and action size
-        policy_type (str) : Defines type of network used (conv or fully connected)
+        policy_type (str) : Defines type of network used (conv or fcn)
         layers (list) : For 'fcn', defines size of dense layers. For 'cnn', defines cnn filter sizes and size of dense layers
         activation_fn (str) : Defines activation function used for final output layer.
         

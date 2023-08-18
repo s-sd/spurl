@@ -56,6 +56,6 @@ policy_network = build_policy_network(state_space,
 
 reinforce = REINFORCE(env, policy_network)
 
-reinforce = train(reinforce, trials=8, episodes_per_trial=8, epochs_per_trial=2, batch_size=16, verbose=True)
+reinforce = train(reinforce, trials=1, episodes_per_trial=4, epochs_per_trial=1, batch_size=64, verbose=True)
 
 history = test(reinforce, trials=2, episodes_per_trial=4, deterministic=True)
