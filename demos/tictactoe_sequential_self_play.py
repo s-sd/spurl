@@ -46,7 +46,7 @@ action_space = env.action_space
 policy_network = build_policy_network(state_space,
                                       action_space,
                                       policy_type = 'fcn',
-                                      layers = [128, 64, 32])
+                                      layers = [32, 16])
 
 # =============================================================================
 # Vanilla Self-Play (Best for TicTacToe)
@@ -68,7 +68,7 @@ for meta_trial in range(meta_trials):
 # last tested commit a657e502c0f2dae9eb8afee3853ed8cb1885f49e
 
 # =============================================================================
-# Fictitious Self-Play
+# Fictitious Self-Play - could warm up with vanilla self play for best results
 # =============================================================================
 
 opponents_path = r'./temp/tictactoe_ops'
@@ -88,7 +88,7 @@ for meta_trial in range(meta_trials):
     print(f'\nMeta Trial: {meta_trial+1} / {meta_trials}\n')
     reinforce = train(reinforce, trials=1, episodes_per_trial=16, epochs_per_trial=2, batch_size=32, verbose=True)    
     rewards, lengths = test(reinforce, trials=1, episodes_per_trial=4, deterministic=True)
-    if lengths > 6.0: # keep training longer for better performance
+    if lengths > 5.0: # keep training longer for better performance
         break
 
 # =============================================================================
@@ -133,6 +133,6 @@ for meta_trial in range(meta_trials):
     print(f'\nMeta Trial: {meta_trial+1} / {meta_trials}\n')
     reinforce = train(reinforce, trials=1, episodes_per_trial=16, epochs_per_trial=2, batch_size=32, verbose=True)    
     rewards, lengths = test(reinforce, trials=1, episodes_per_trial=4, deterministic=True)
-    if lengths > 6.0: # keep training longer for better performance
+    if lengths > 5.0: # keep training longer for better performance
         break
 

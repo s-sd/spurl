@@ -24,14 +24,15 @@ def test(algorithm, trials, episodes_per_trial, deterministic=False):
         print(f'    Mean Episode Length: {mean_episode_length}')
     return mean_rewards, mean_episode_length
 
-def train_self_play(algorithm, trials, episodes_per_trial, epochs_per_trial, batch_size, verbose, self_play_type):
-    for trial in range(trials):
-        print(f'\nTrial: {trial+1}/{trials}')
-        print('    Running environment')
-        if trials % algorithm.opponent_save_frequency:
-            algorithm.policy_network.save(os.path.join(algorithm.opponents_path, f'{trial}'))
-        states, actions, rewards = algorithm.run(episodes_per_trial)
-        print('    Updating policy network')
-        algorithm.update(states, actions, rewards, epochs_per_trial, batch_size, verbose=verbose)
-    return algorithm
+# saving was implemented within self play run algo
+# def train_self_play(algorithm, trials, episodes_per_trial, epochs_per_trial, batch_size, verbose, self_play_type):
+#     for trial in range(trials):
+#         print(f'\nTrial: {trial+1}/{trials}')
+#         print('    Running environment')
+#         if trials % algorithm.opponent_save_frequency:
+#             algorithm.policy_network.save(os.path.join(algorithm.opponents_path, f'{trial}'))
+#         states, actions, rewards = algorithm.run(episodes_per_trial)
+#         print('    Updating policy network')
+#         algorithm.update(states, actions, rewards, epochs_per_trial, batch_size, verbose=verbose)
+#     return algorithm
 
