@@ -6,6 +6,7 @@ import os
 import logging
 import warnings
 import re
+from copy import deepcopy
 
 tf.get_logger().setLevel(logging.ERROR)
 
@@ -22,19 +23,22 @@ class REINFORCE(discrete.REINFORCE):
     def select_action(self, policy, state, deterministic=False):
         state = np.array([state])
         action_probs = policy(state)
-        
+                
         if np.isnan(action_probs).any():
             raise ValueError(f'Network outputs contain NaN: {action_probs}')  
             # suggestions: reduce network size, clip grads, scale states, add regularisation
         
         if deterministic:
-            action_probs = tf.math.round(action_probs)
-            dist = tfp.distributions.Categorical(probs=action_probs, dtype=tf.float32)
+            max_prob_ind = np.argmax(np.squeeze(action_probs))
+            action_probs_new = np.zeros(len(np.squeeze(action_probs)))
+            action_probs_new[max_prob_ind] = 1.0
+            dist = tfp.distributions.Categorical(probs=action_probs_new, dtype=tf.float32)
             action = dist.sample()
     
         else:
             dist = tfp.distributions.Categorical(probs=action_probs, dtype=tf.float32) # could add noise to action_probs
             action = dist.sample()
+        
         return action
     
     def opponent_sampler(self, opponents_list):
