@@ -17,8 +17,10 @@ class REINFORCE(base.REINFORCE):
             # suggestions: reduce network size, clip grads, scale states, add regularisation
         
         if deterministic:
-            action_probs = tf.math.round(action_probs)
-            dist = tfp.distributions.Categorical(probs=action_probs, dtype=tf.float32)
+            max_prob_ind = np.argmax(np.squeeze(action_probs))
+            action_probs_new = np.zeros(len(np.squeeze(action_probs)))
+            action_probs_new[max_prob_ind] = 1.0
+            dist = tfp.distributions.Categorical(probs=action_probs_new, dtype=tf.float32)
             action = dist.sample()
         
         else:
