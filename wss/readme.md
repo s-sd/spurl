@@ -7,5 +7,7 @@ This repository presents code for our proposed weakly supervised segmentation (W
 An overview of our proposed framework is presented below:
 ![rlsp_framework](self_play_wss_3.png)
 
+The self-play environment is presented in `wss.py` and the script used for training is presented in `self_play_wss.py`. Note that here we present simplified examples (following variable names used in the manuscript, for readability), please refer to the manuscript for full experimental details and datasets used.
+
 Segmented samples for our proposed methods (RLSP) are presented below:
 ![rlsp_samples](self_play_samples_4.png)
