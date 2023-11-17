@@ -6,4 +6,4 @@ This repository presents code for our proposed weakly supervised segmentation (W
 We additionally propose a game termination condition that can be called by either side, upon exhaustion of all ROI-containing patches, followed by the selection of a final patch from each. Upon termination, the agent is incentivised if ROI-containing patches are exhausted or disincentivised if an ROI-containing patch is found by the competitor. This competitive approach to WSS ensures minimisation of over- or under- segmentation, which has thus far been a common problem with WSS methods. 
 
 Segmented samples for our proposed methods (RLSP) are presented below:
-
+![rlsp_samples](self_play_samples_4.png)
